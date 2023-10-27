@@ -18,6 +18,7 @@
 #include "ImfPxr24Compressor.h"
 #include "ImfRleCompressor.h"
 #include "ImfZipCompressor.h"
+#include "ImfZstdCompressor.h"
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
 
@@ -63,6 +64,7 @@ isValidCompression (Compression c)
         case B44_COMPRESSION:
         case B44A_COMPRESSION:
         case DWAA_COMPRESSION:
+        case DEEP_CODEC:
         case DWAB_COMPRESSION: return true;
 
         default: return false;
@@ -89,7 +91,8 @@ isValidDeepCompression (Compression c)
     {
         case NO_COMPRESSION:
         case RLE_COMPRESSION:
-        case ZIPS_COMPRESSION: return true;
+        case ZIPS_COMPRESSION:
+        case DEEP_CODEC: return true;
         default: return false;
     }
 }
@@ -140,7 +143,8 @@ newCompressor (Compression c, size_t maxScanLineSize, const Header& hdr)
                 static_cast<int> (maxScanLineSize),
                 256,
                 DwaCompressor::STATIC_HUFFMAN);
-
+        case DEEP_CODEC:
+            return new ZstdCompressor(hdr, maxScanLineSize);
         default: return 0;
     }
 }
@@ -155,6 +159,7 @@ numLinesInBuffer (Compression comp)
     {
         case NO_COMPRESSION:
         case RLE_COMPRESSION:
+        case DEEP_CODEC: // FIXME
         case ZIPS_COMPRESSION: return 1;
         case ZIP_COMPRESSION: return 16;
         case PIZ_COMPRESSION: return 32;

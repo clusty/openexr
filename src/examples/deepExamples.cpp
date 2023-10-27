@@ -169,7 +169,7 @@ writeDeepScanlineFile (
     header.channels ().insert ("Z", Channel (FLOAT));
     header.channels ().insert ("A", Channel (HALF));
     header.setType (DEEPSCANLINE);
-    header.compression () = ZIPS_COMPRESSION;
+    header.compression () = Compression::DEEP_CODEC;
 
     DeepScanLineOutputFile file (filename, header);
 

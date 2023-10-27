@@ -45,6 +45,8 @@ enum IMF_EXPORT_ENUM Compression
                           // wise and faster to decode full frames
                           // than DWAA_COMPRESSION.
 
+    DEEP_CODEC = 10,
+
     NUM_COMPRESSION_METHODS // number of different compression methods
 };
 

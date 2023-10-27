@@ -65,6 +65,8 @@ printCompression (Compression c)
 
         case DWAB_COMPRESSION: cout << "dwa, medium scanline blocks"; break;
 
+        case DEEP_CODEC: cout << "deep codec"; break;
+
         default: cout << int (c); break;
     }
 }

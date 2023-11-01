@@ -222,3 +222,7 @@ openexr_define_library(OpenEXR
     OpenEXR::IlmThread
     OpenEXR::OpenEXRCore
   )
+
+target_include_directories(OpenEXR PUBLIC "/home/vladal/bin/include/")
+target_link_directories(OpenEXR PUBLIC "/home/vladal/bin/lib")
+target_link_libraries(OpenEXR PUBLIC "zstd")

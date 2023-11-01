@@ -159,7 +159,6 @@ numLinesInBuffer (Compression comp)
     {
         case NO_COMPRESSION:
         case RLE_COMPRESSION:
-        case DEEP_CODEC: // FIXME
         case ZIPS_COMPRESSION: return 1;
         case ZIP_COMPRESSION: return 16;
         case PIZ_COMPRESSION: return 32;
@@ -167,6 +166,7 @@ numLinesInBuffer (Compression comp)
         case B44_COMPRESSION:
         case B44A_COMPRESSION:
         case DWAA_COMPRESSION: return 32;
+        case DEEP_CODEC: // FIXME
         case DWAB_COMPRESSION: return 256;
 
         default: throw IEX_NAMESPACE::ArgExc ("Unknown compression type");

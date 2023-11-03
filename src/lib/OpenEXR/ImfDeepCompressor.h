@@ -2,7 +2,7 @@
 #include <memory>
 #include "ImfNamespace.h"
 #include "ImfCompressor.h"
-
+#include "ImfHeader.h"
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
 class DeepCompressor : public Compressor
@@ -14,6 +14,7 @@ public:
 private:
     raw_ptr _outBuffer;
     size_t  _maxScanLines;
+    Header _hdr;
     int numScanLines () const override; // max
     int compress (
         const char* inPtr, int inSize, int minY, const char*& outPtr) override;

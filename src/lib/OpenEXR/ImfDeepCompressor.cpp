@@ -6,6 +6,30 @@
 #include <zstd.h>
 #include "ImfDeepCompressor.h"
 
+namespace
+{
+
+int
+ZSTD_compress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr)
+{
+    auto const cBuffSize = ZSTD_compressBound(inSize);
+    outPtr = Imf::DeepCompressor::raw_ptr((char*)malloc (cBuffSize), &free);
+    auto const cSize = ZSTD_compress(outPtr.get(), cBuffSize, inPtr, inSize, 15);
+    return cSize;
+}
+
+int
+ZSTD_uncompress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr)
+{
+    auto rSize = ZSTD_getFrameContentSize(inPtr, inSize);
+    outPtr = Imf::DeepCompressor::raw_ptr((char*)malloc (rSize), &free);
+    auto const dSize = ZSTD_decompress(outPtr.get(), rSize, inPtr, inSize);
+    return dSize;
+}
+
+
+}
+
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
 DeepCompressor::DeepCompressor ( const Header& hdr, size_t maxScanLines): Compressor(hdr), _maxScanLines (maxScanLines),_outBuffer (nullptr, &free)
 {}
@@ -19,28 +43,17 @@ int
 DeepCompressor::compress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
-   /* _outBuffer = raw_ptr((char*)malloc (inSize), &free);
-    memcpy(_outBuffer.get(), inPtr, inSize);
-    outPtr = _outBuffer.get();*/
-
-    auto const cBuffSize = ZSTD_compressBound(inSize);
-    _outBuffer = raw_ptr((char*)malloc (cBuffSize), &free);
-    auto const cSize = ZSTD_compress(_outBuffer.get(), cBuffSize, inPtr, inSize, 15);
+    auto ret = ZSTD_compress_impl(inPtr, inSize, _outBuffer);
     outPtr = _outBuffer.get();
-    return cSize;
+    return ret;
 }
 int
 DeepCompressor::uncompress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
-   /* _outBuffer = raw_ptr((char*)malloc (inSize), &free);
-    memcpy(_outBuffer.get(), inPtr, inSize);
-    outPtr = _outBuffer.get();*/
-    auto rSize = ZSTD_getFrameContentSize(inPtr, inSize);
-    _outBuffer = raw_ptr((char*)malloc (rSize), &free);
-    auto const dSize = ZSTD_decompress(_outBuffer.get(), rSize, inPtr, inSize);
+    auto ret = ZSTD_uncompress_impl(inPtr, inSize, _outBuffer);
     outPtr = _outBuffer.get();
-    return dSize;
+    return ret;
 }
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_EXIT

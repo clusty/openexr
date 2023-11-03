@@ -4,21 +4,19 @@
 
 #include <cstring>
 #include <zstd.h>
-#include "ImfZstdCompressor.h"
-
-#define NTHREADS 4
+#include "ImfDeepCompressor.h"
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
-ZstdCompressor::ZstdCompressor ( const Header& hdr, size_t maxScanLines): Compressor(hdr), _maxScanLines (maxScanLines),_outBuffer (nullptr, &free)
+DeepCompressor::DeepCompressor ( const Header& hdr, size_t maxScanLines): Compressor(hdr), _maxScanLines (maxScanLines),_outBuffer (nullptr, &free)
 {}
 
 int
-ZstdCompressor::numScanLines () const
+DeepCompressor::numScanLines () const
 {
     return 256; // max ? // Needs to be in sync with ImfCompressor::numLinesInBuffer
 }
 int
-ZstdCompressor::compress (
+DeepCompressor::compress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
    /* _outBuffer = raw_ptr((char*)malloc (inSize), &free);
@@ -32,7 +30,7 @@ ZstdCompressor::compress (
     return cSize;
 }
 int
-ZstdCompressor::uncompress (
+DeepCompressor::uncompress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
    /* _outBuffer = raw_ptr((char*)malloc (inSize), &free);

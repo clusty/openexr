@@ -18,7 +18,7 @@
 #include "ImfPxr24Compressor.h"
 #include "ImfRleCompressor.h"
 #include "ImfZipCompressor.h"
-#include "ImfZstdCompressor.h"
+#include "ImfDeepCompressor.h"
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
 
@@ -144,7 +144,7 @@ newCompressor (Compression c, size_t maxScanLineSize, const Header& hdr)
                 256,
                 DwaCompressor::STATIC_HUFFMAN);
         case DEEP_CODEC:
-            return new ZstdCompressor(hdr, maxScanLineSize);
+            return new DeepCompressor (hdr, maxScanLineSize);
         default: return 0;
     }
 }

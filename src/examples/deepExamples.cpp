@@ -24,6 +24,9 @@
 #include "drawImage.h"
 
 #include "namespaceAlias.h"
+
+#include <boost/timer/timer.hpp>
+
 using namespace IMF;
 using namespace std;
 using namespace IMATH_NAMESPACE;
@@ -121,7 +124,7 @@ readDeepScanlineFile (
 unsigned int getPixelSampleCount (int i, int j)
 {
     // Dummy code creating deep data from a flat image
-    return 1;
+    return 10;
 }
 
 Array2D<float> testDataZ;
@@ -147,7 +150,8 @@ writeDeepScanlineFile (
 
     Array2D<half*>& dataA,
 
-    Array2D<unsigned int>& sampleCount)
+    Array2D<unsigned int>& sampleCount,
+    Compression compression = Compression::ZIPS_COMPRESSION )
 
 {
     //
@@ -169,7 +173,7 @@ writeDeepScanlineFile (
     header.channels ().insert ("Z", Channel (FLOAT));
     header.channels ().insert ("A", Channel (HALF));
     header.setType (DEEPSCANLINE);
-    header.compression () = Compression::DEEP_CODEC;
+    header.compression () = compression;
 
     DeepScanLineOutputFile file (filename, header);
 
@@ -230,8 +234,8 @@ writeDeepScanlineFile (
 
 void deepExamples()
 {
-    int w = 800;
-    int h = 600;
+    int w = 1920;
+    int h = 1080;
     
     Box2i window;
     window.min.setValue(0, 0);
@@ -250,7 +254,38 @@ void deepExamples()
     testDataA.resizeErase(h, w);
     testDataZ.resizeErase(h, w);
     drawImage2(testDataA, testDataZ, w, h);
-    
-    writeDeepScanlineFile("test.deep.exr", window, window, dataZ, dataA, sampleCount);
-    readDeepScanlineFile ("test.deep.exr", window, window, dataZ, dataA, sampleCount);
+
+    {
+        boost::timer::auto_cpu_timer t("deep scanline write %w seconds\n");
+        writeDeepScanlineFile (
+            "test.deep.exr",
+            window,
+            window,
+            dataZ,
+            dataA,
+            sampleCount,
+            Compression::DEEP_CODEC);
+    }
+    {
+        boost::timer::auto_cpu_timer t ("zips scanline write %w seconds\n");
+        writeDeepScanlineFile (
+            "test.zips.exr",
+            window,
+            window,
+            dataZ,
+            dataA,
+            sampleCount,
+            Compression::ZIPS_COMPRESSION);
+    }
+    {
+        boost::timer::auto_cpu_timer t ("deep scanline read %w seconds\n");
+        readDeepScanlineFile (
+            "test.deep.exr", window, window, dataZ, dataA, sampleCount);
+    }
+    {
+        boost::timer::auto_cpu_timer t ("zips scanline read %w seconds\n");
+        readDeepScanlineFile (
+            "test.zips.exr", window, window, dataZ, dataA, sampleCount);
+    }
+    //readDeepScanlineFile ("test.deep.zstd.exr", window, window, dataZ, dataA, sampleCount);
 }

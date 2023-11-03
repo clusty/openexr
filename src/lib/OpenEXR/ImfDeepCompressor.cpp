@@ -27,23 +27,24 @@ ZSTD_uncompress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_pt
     return dSize;
 }
 
-#define NTHREADS 4
+#define NTHREADS 20
 
 int
 BLOSC_compress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr)
 {
     blosc2_init();
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
-    blosc2_dparams dparams = BLOSC2_DPARAMS_DEFAULTS;
+
     cparams.typesize = sizeof(int32_t);
     cparams.clevel = 9;
     cparams.nthreads = NTHREADS;
-    dparams.nthreads = NTHREADS;
+    cparams.compcode = BLOSC_ZSTD;
+    cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE;
 
-    blosc2_storage storage = {.cparams=&cparams, .dparams=&dparams};
+    blosc2_storage storage = {.cparams=&cparams};
     blosc2_schunk* schunk = blosc2_schunk_new(&storage);
     auto in = const_cast<char*>(inPtr);
-    int64_t nchunks = blosc2_schunk_append_buffer(schunk, in, inSize);
+    blosc2_schunk_append_buffer(schunk, in, inSize);
 
     uint8_t *buffer;
     bool yours = false;
@@ -60,14 +61,10 @@ int
 BLOSC_uncompress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr, int maxScanLineSize)
 {
     blosc2_init();
-    blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
+
     blosc2_dparams dparams = BLOSC2_DPARAMS_DEFAULTS;
-    cparams.typesize = sizeof(int32_t);
-    cparams.clevel = 9;
-    cparams.nthreads = NTHREADS;
     dparams.nthreads = NTHREADS;
 
-    blosc2_storage storage = {.cparams=&cparams, .dparams=&dparams};
     auto in = const_cast<char*>(inPtr);
     blosc2_schunk* schunk = blosc2_schunk_from_buffer(reinterpret_cast<uint8_t*>(in), inSize, false);//(schunk, in, inSize);
 

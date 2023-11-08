@@ -5,12 +5,12 @@
 #include <cstring>
 #include "ImfDeepCompressor.h"
 #include "IlmThread.h"
-#include <zstd.h>
+//#include <zstd.h>
 #include "blosc2.h"
 #include "IlmThreadPool.h"
 namespace
 {
-
+/*
 int
 ZSTD_compress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr)
 {
@@ -28,7 +28,7 @@ ZSTD_uncompress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_pt
     auto const dSize = ZSTD_decompress(outPtr.get(), rSize, inPtr, inSize);
     return dSize;
 }
-
+*/
 class BloscInit
 {
 public:
@@ -57,18 +57,23 @@ BLOSC_compress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr
     cparams.compcode = BLOSC_ZSTD;
     cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE;
 
-    blosc2_storage storage = {.cparams=&cparams};
+    blosc2_storage storage= BLOSC2_STORAGE_DEFAULTS;
+    storage.cparams=&cparams;
+    storage.contiguous = true;
+
     blosc2_schunk* schunk = blosc2_schunk_new(&storage);
     auto in = const_cast<char*>(inPtr);
     blosc2_schunk_append_buffer(schunk, in, inSize);
 
     uint8_t *buffer;
-    bool yours = false;
-    auto size = blosc2_schunk_to_buffer(schunk, &buffer, &yours);
+    bool shouldFree = true;
+    auto size = blosc2_schunk_to_buffer(schunk, &buffer, &shouldFree);
     outPtr = Imf::DeepCompressor::raw_ptr((char*)buffer, &free);
 
-    blosc2_schunk_free(schunk);
-
+    if (shouldFree == true)
+    {
+        blosc2_schunk_free (schunk);
+    }
     return size;
 }
 

@@ -225,4 +225,4 @@ openexr_define_library(OpenEXR
 
 target_include_directories(OpenEXR PUBLIC "/home/vladal/bin/include/")
 target_link_directories(OpenEXR PUBLIC "/home/vladal/bin/lib")
-target_link_libraries(OpenEXR PUBLIC "zstd" "blosc2")
+target_link_libraries(OpenEXR PUBLIC "blosc2")

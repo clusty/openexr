@@ -53,7 +53,7 @@ BLOSC_compress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr
 
     cparams.typesize = sizeof(int32_t);
     cparams.clevel = 9;
-    cparams.nthreads = ILMTHREAD_NAMESPACE::ThreadPool::globalThreadPool ().numThreads();
+    //cparams.nthreads = ILMTHREAD_NAMESPACE::ThreadPool::globalThreadPool ().numThreads();
     cparams.compcode = BLOSC_ZSTD;
     cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE;
 
@@ -103,7 +103,7 @@ DeepCompressor::DeepCompressor ( const Header& hdr, size_t maxScanLines): Compre
 int
 DeepCompressor::numScanLines () const
 {
-    return 256; // max ? // Needs to be in sync with ImfCompressor::numLinesInBuffer
+    return 1; // max ? // Needs to be in sync with ImfCompressor::numLinesInBuffer
 }
 int
 DeepCompressor::compress (

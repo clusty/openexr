@@ -44,60 +44,11 @@ private:
         return instance;
     }
 };
-
-int
-BLOSC_compress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr)
-{
-    BloscInit::Init();
-    blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
-
-    cparams.typesize = sizeof(int32_t);
-    cparams.clevel = 9;
-    //cparams.nthreads = ILMTHREAD_NAMESPACE::ThreadPool::globalThreadPool ().numThreads();
-    cparams.compcode = BLOSC_ZSTD;
-    cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE;
-
-    blosc2_storage storage= BLOSC2_STORAGE_DEFAULTS;
-    storage.cparams=&cparams;
-    storage.contiguous = true;
-
-    blosc2_schunk* schunk = blosc2_schunk_new(&storage);
-    auto in = const_cast<char*>(inPtr);
-    blosc2_schunk_append_buffer(schunk, in, inSize);
-
-    uint8_t *buffer;
-    bool shouldFree = true;
-    auto size = blosc2_schunk_to_buffer(schunk, &buffer, &shouldFree);
-    outPtr = Imf::DeepCompressor::raw_ptr((char*)buffer, &free);
-
-    if (shouldFree == true)
-    {
-        blosc2_schunk_free (schunk);
-    }
-    return size;
-}
-
-int
-BLOSC_uncompress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr, int maxScanLineSize)
-{
-    blosc2_dparams dparams = BLOSC2_DPARAMS_DEFAULTS;
-    dparams.nthreads = ILMTHREAD_NAMESPACE::ThreadPool::globalThreadPool ().numThreads();;
-
-    auto in = const_cast<char*>(inPtr);
-    blosc2_schunk* schunk = blosc2_schunk_from_buffer(reinterpret_cast<uint8_t*>(in), inSize, false);
-
-    auto buffSize = maxScanLineSize * 256;
-    outPtr = Imf::DeepCompressor::raw_ptr((char*)malloc (buffSize), &free);
-    auto size = blosc2_schunk_decompress_chunk(schunk, 0, outPtr.get(), buffSize);
-
-    blosc2_schunk_free(schunk);
-    return size;
-}
-
 }
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
-DeepCompressor::DeepCompressor ( const Header& hdr, size_t maxScanLines): Compressor(hdr), _maxScanLines (maxScanLines),_outBuffer (nullptr, &free), _hdr(hdr)
+DeepCompressor::DeepCompressor ( const Header& hdr, size_t maxScanlineSize): Compressor(hdr),
+    _maxScanlineSize (maxScanlineSize),_outBuffer (nullptr, &free), _schunk (nullptr,&blosc2_schunk_free), _hdr(hdr)
 {}
 
 int
@@ -109,18 +60,61 @@ int
 DeepCompressor::compress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
-    _hdr.sanityCheck();
-    auto ret = BLOSC_compress_impl(inPtr, inSize, _outBuffer);
-    outPtr = _outBuffer.get();
+    auto ret = BLOSC_compress_impl(inPtr, inSize, outPtr);
     return ret;
 }
 int
 DeepCompressor::uncompress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
-    auto ret = BLOSC_uncompress_impl(inPtr, inSize, _outBuffer, _maxScanLines);
-    outPtr = _outBuffer.get();
+    auto ret = BLOSC_uncompress_impl(inPtr, inSize, outPtr);
     return ret;
+}
+
+
+int
+DeepCompressor::BLOSC_compress_impl (const char* inPtr, int inSize, const char*& out)
+{
+    BloscInit::Init();
+    blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
+
+    cparams.typesize = sizeof(int32_t);
+    cparams.clevel = 9;
+    cparams.nthreads = 1;//ILMTHREAD_NAMESPACE::ThreadPool::globalThreadPool ().numThreads();
+    cparams.compcode = BLOSC_ZSTD;
+    cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE;
+
+    blosc2_storage storage= BLOSC2_STORAGE_DEFAULTS;
+    storage.cparams=&cparams;
+    storage.contiguous = true;
+
+    _schunk = schunk_ptr (blosc2_schunk_new(&storage), &blosc2_schunk_free);
+
+    auto in = const_cast<char*>(inPtr);
+    blosc2_schunk_append_buffer(_schunk.get(), in, inSize);
+
+    uint8_t *buffer;
+    bool shouldFree = true;
+    auto size = blosc2_schunk_to_buffer(_schunk.get(), &buffer, &shouldFree);
+    out = (char*)buffer;
+    if (shouldFree)
+    {
+        _outBuffer = raw_ptr((char*)buffer, &free);
+    }
+    return size;
+}
+
+int
+DeepCompressor::BLOSC_uncompress_impl (const char* inPtr, int inSize, const char*& out)
+{
+    auto in = const_cast<char*>(inPtr);
+    _schunk = schunk_ptr (blosc2_schunk_from_buffer(reinterpret_cast<uint8_t*>(in), inSize, true), &blosc2_schunk_free);
+
+    auto buffSize = _maxScanlineSize * numScanLines();
+    _outBuffer = Imf::DeepCompressor::raw_ptr((char*)malloc (buffSize), &free);
+    auto size = blosc2_schunk_decompress_chunk(_schunk.get(), 0, _outBuffer.get(), buffSize);
+    out = _outBuffer.get();
+    return size;
 }
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_EXIT

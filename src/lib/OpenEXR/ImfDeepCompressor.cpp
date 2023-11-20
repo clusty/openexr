@@ -7,7 +7,10 @@
 #include "IlmThread.h"
 //#include <zstd.h>
 #include "blosc2.h"
+#include "blosc2/filters-registry.h"
 #include "IlmThreadPool.h"
+#include "ImfChannelList.h"
+#include "ImfMisc.h"
 namespace
 {
 /*
@@ -48,7 +51,7 @@ private:
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
 DeepCompressor::DeepCompressor ( const Header& hdr, size_t maxScanlineSize): Compressor(hdr),
-    _maxScanlineSize (maxScanlineSize),_outBuffer (nullptr, &free), _schunk (nullptr,&blosc2_schunk_free), _hdr(hdr)
+    _maxScanlineSize (maxScanlineSize),_outBuffer (nullptr, &free), _schunk (nullptr,&blosc2_schunk_free)
 {}
 
 int
@@ -78,11 +81,23 @@ DeepCompressor::BLOSC_compress_impl (const char* inPtr, int inSize, const char*&
     BloscInit::Init();
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
 
-    cparams.typesize = sizeof(int32_t);
-    cparams.clevel = 9;
+   /* auto sz = 0;
+    for (ChannelList::ConstIterator c = header().channels().begin (); c != header().channels().end ();
+         ++c)
+    {
+        sz += pixelTypeSize(c.channel().type);
+        //std::cerr<<"Channel: "<<c.name()<<" type: "<<c.channel().type<<" size: "<<pixelTypeSize(c.channel().type)<<std::endl;
+    }
+
+    //std::cerr<<"Total:"<<sz<<std::endl;
+*/
+    cparams.typesize = pixelTypeSize(PixelType::FLOAT); // Expect Float values
+    cparams.clevel = 9;  // 9 is about a 20% increase in compression compared to 5. Decompression speed is unchanged.
     cparams.nthreads = 1;//ILMTHREAD_NAMESPACE::ThreadPool::globalThreadPool ().numThreads();
-    cparams.compcode = BLOSC_ZSTD;
-    cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE;
+    cparams.compcode = BLOSC_ZSTD; // Codec
+    cparams.splitmode = BLOSC_NEVER_SPLIT;  // Split => multithreading, not split better compression
+    //cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE; // Default BYTE shuffle filter.
+
 
     blosc2_storage storage= BLOSC2_STORAGE_DEFAULTS;
     storage.cparams=&cparams;

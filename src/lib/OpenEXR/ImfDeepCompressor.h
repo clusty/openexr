@@ -17,7 +17,6 @@ private:
     raw_ptr _outBuffer;
     schunk_ptr _schunk;
     size_t  _maxScanlineSize;
-    Header _hdr;
     int numScanLines () const override; // max
     int compress (
         const char* inPtr, int inSize, int minY, const char*& outPtr) override;

@@ -634,7 +634,7 @@ readSampleCountForLineBlock (
                 "Deep scanline data corrupt at chunk "
                     << lineBlockId << " (sampleCountTableDataSize error)");
         }
-        data->sampleCountTableComp->uncompress (
+        data->sampleCountTableComp->uncompressSampleCountTable (
             data->sampleCountTableBuffer,
             static_cast<int> (sampleCountTableDataSize),
             minY,
@@ -825,11 +825,19 @@ LineBufferTask::execute ()
             {
                 _lineBuffer->format = _lineBuffer->compressor->format ();
 
+                auto sampleCount = &(_ifd->sampleCount[0][_ifd->minY]);
+                    Compressor::CompressorDataContext ctx
+                    {
+                        .inPtr = _lineBuffer->buffer,
+                        .inSize =static_cast<int> (_lineBuffer->packedDataSize),
+                        .minY = _lineBuffer->minY,
+                        .samplesStrideArray = reinterpret_cast<int*>(sampleCount),
+                        .samplesStrideArraySize = _ifd->maxX - _ifd->minX+1,
+                    };
+
                 _lineBuffer->packedDataSize =
                     _lineBuffer->compressor->uncompress (
-                        _lineBuffer->buffer,
-                        static_cast<int> (_lineBuffer->packedDataSize),
-                        _lineBuffer->minY,
+                            ctx,
                         _lineBuffer->uncompressedData);
 
                 if (_lineBuffer->unpackedDataSize !=
@@ -1967,10 +1975,17 @@ DeepScanLineInputFile::readPixels (
         decomp = newCompressor (
             _data->header.compression (), unpackedDataSize, _data->header);
 
-        decomp->uncompress (
-            rawPixelData + 28 + sampleCountTableDataSize,
-            static_cast<int> (packedDataSize),
-            data_scanline,
+
+        Compressor::CompressorDataContext ctx
+            {
+                .inPtr = rawPixelData + 28 + sampleCountTableDataSize,
+                .inSize =static_cast<int> (packedDataSize),
+                .minY = data_scanline,
+                .samplesStrideArray = nullptr, // garbage data for now
+                .samplesStrideArraySize = 0, // garbage data for now
+            };
+
+        decomp->uncompress (ctx,
             uncompressed_data);
         format = decomp->format ();
     }
@@ -2186,7 +2201,7 @@ DeepScanLineInputFile::readPixelSampleCounts (
             rawSampleCountTableSize,
             _data->header);
 
-        decomp->uncompress (
+        decomp->uncompressSampleCountTable (
             rawPixelData + 28,
             static_cast<int> (sampleCountTableDataSize),
             data_scanline,

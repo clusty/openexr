@@ -49,6 +49,31 @@ Compressor::uncompressTile (
 {
     return uncompress (inPtr, inSize, range.min.y, outPtr);
 }
+int
+Compressor::compressSampleCountTable (
+    const char* inPtr, int inSize, int minY, const char*& outPtr)
+{
+    return compress (inPtr, inSize, minY, outPtr);
+}
+
+int
+Compressor::uncompressSampleCountTable (
+    const char* inPtr, int inSize, int minY, const char*& outPtr)
+{
+    return uncompress (inPtr, inSize, minY, outPtr);
+}
+int
+Compressor::compress (
+    const Compressor::CompressorDataContext& data, const char*& outPtr)
+{
+    return compress (data.inPtr, data.inSize, data.minY, outPtr);
+}
+int
+Compressor::uncompress (
+    const Compressor::CompressorDataContext& data, const char*& outPtr)
+{
+    return uncompress (data.inPtr, data.inSize, data.minY, outPtr);
+}
 
 bool
 isValidCompression (Compression c)

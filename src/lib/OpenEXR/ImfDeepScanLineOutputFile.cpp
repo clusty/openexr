@@ -707,7 +707,7 @@ LineBufferTask::execute ()
         if (_lineBuffer->sampleCountTableCompressor)
         {
             _lineBuffer->sampleCountTableSize =
-                _lineBuffer->sampleCountTableCompressor->compress (
+                _lineBuffer->sampleCountTableCompressor->compressSampleCountTable (
                     _lineBuffer->sampleCountTableBuffer,
                     static_cast<int> (tableDataSize),
                     _lineBuffer->minY,
@@ -740,11 +740,16 @@ LineBufferTask::execute ()
         if (compressor)
         {
             const char* compPtr;
-
+            Compressor::CompressorDataContext ctx
+                {
+                    .inPtr = _lineBuffer->dataPtr,
+                    .inSize = static_cast<int> (_lineBuffer->dataSize),
+                    .minY = _lineBuffer->minY,
+                    .samplesStrideArray = reinterpret_cast<int*>(&(_lineBuffer->sampleCountTableBuffer[0])),
+                    .samplesStrideArraySize=static_cast<int> (tableDataSize / Xdr::size<unsigned int>()),
+                };
             uint64_t compSize = compressor->compress (
-                _lineBuffer->dataPtr,
-                static_cast<int> (_lineBuffer->dataSize),
-                _lineBuffer->minY,
+                ctx,
                 compPtr);
 
             if (compSize < _lineBuffer->dataSize)

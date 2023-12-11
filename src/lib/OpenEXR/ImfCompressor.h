@@ -40,6 +40,15 @@ public:
     IMF_EXPORT
     virtual ~Compressor ();
 
+    struct CompressorDataContext
+    {
+        const char* inPtr;
+        int inSize;
+        int minY;
+        const int* samplesStrideArray;
+        int samplesStrideArraySize;
+    };
+
     //----------------------------------------------
     // Maximum number of scan lines processed by
     // a single call to compress() and uncompress().
@@ -125,6 +134,11 @@ public:
 
     virtual int
     compress (const char* inPtr, int inSize, int minY, const char*& outPtr) = 0;
+    virtual int
+    compress (const CompressorDataContext& data, const char*& outPtr);
+
+    virtual int compressSampleCountTable (const char* inPtr, int inSize, int minY, const char*& outPtr);
+
 
     IMF_EXPORT
     virtual int compressTile (
@@ -151,6 +165,10 @@ public:
 
     virtual int uncompress (
         const char* inPtr, int inSize, int minY, const char*& outPtr) = 0;
+    virtual int
+    uncompress (const CompressorDataContext& data, const char*& outPtr);
+
+    virtual int uncompressSampleCountTable (const char* inPtr, int inSize, int minY, const char*& outPtr);
 
     IMF_EXPORT
     virtual int uncompressTile (

@@ -124,7 +124,7 @@ readDeepScanlineFile (
 unsigned int getPixelSampleCount (int i, int j)
 {
     // Dummy code creating deep data from a flat image
-    return 10;
+    return 3;
 }
 
 Array2D<float> testDataZ;
@@ -137,8 +137,11 @@ void getPixelSampleData(
     Array2D<half*>& dataA)
 {
     // Dummy code creating deep data from a flat image
-    dataZ[i][j][0] = testDataZ[i][j];
-    dataA[i][j][0] = testDataA[i][j];
+    for (auto k =0;k< getPixelSampleCount (i,j);k++)
+    {
+        dataZ[i][j][0] = testDataZ[i][j];
+        dataA[i][j][0] = testDataA[i][j];
+    }
 }
 
 void

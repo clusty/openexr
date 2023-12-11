@@ -328,6 +328,8 @@ drawImage1 (Array2D<Rgba>& px, int w, int h)
     }
 }
 
+
+
 void
 drawImage2 (Array2D<half>& gpx, Array2D<float>& zpx, int w, int h)
 {

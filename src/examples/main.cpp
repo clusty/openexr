@@ -21,7 +21,7 @@ main (int argc, char* argv[])
 {
     try
     {
-        OPENEXR_IMF_NAMESPACE::setGlobalThreadCount (20);
+        OPENEXR_IMF_NAMESPACE::setGlobalThreadCount (1);
         /*rgbaInterfaceExamples ();
         generalInterfaceExamples ();
 

@@ -39,6 +39,8 @@ private:
 
     int BLOSC_compress_impl (const char* inPtr, int inSize, PixelType type, const char*& out);
     int BLOSC_uncompress_impl (const char* inPtr, int inSize, const char*& out);
+
+    int BLOSC_compress_float_impl (const char* inPtr, int inSize, PixelType type, const char*& out);
     //CompressorDataContext deinterlace(const CompressorDataContext& ctx);
     //CompressorDataContext interlace(const CompressorDataContext& ctx);
 

@@ -3,6 +3,7 @@
 //
 
 #include <cstring>
+#include <b2nd.h>
 #include "ImfDeepCompressor.h"
 #include "IlmThread.h"
 //#include <zstd.h>
@@ -52,7 +53,7 @@ blosc2_cparams getBloscCParams(Imf::PixelType type)
             break;
         case Imf::PixelType::FLOAT:
             cparams.compcode = BLOSC_CODEC_ZFP_FIXED_ACCURACY;
-            cparams.compcode_meta = -5;
+            cparams.compcode_meta = -3;
             cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_NOFILTER;
             break;
         case Imf::PixelType::UINT:
@@ -118,6 +119,12 @@ DeepCompressor::BLOSC_compress_impl (
     const char* inPtr, int inSize, PixelType type, const char*& out)
 {
     BloscInit::Init ();
+
+    if (type == PixelType::FLOAT)
+    {
+        return BLOSC_compress_float_impl (inPtr, inSize, type, out);
+    }
+
     blosc2_cparams cparams = getBloscCParams(type);
     
     blosc2_storage storage = BLOSC2_STORAGE_DEFAULTS;
@@ -127,7 +134,7 @@ DeepCompressor::BLOSC_compress_impl (
     auto schunk = schunk_ptr (blosc2_schunk_new (&storage), &blosc2_schunk_free);
 
     auto in = const_cast<char*> (inPtr);
-    auto nChunks = blosc2_schunk_append_buffer (schunk.get (), in, inSize);
+    blosc2_schunk_append_buffer (schunk.get (), in, inSize);
 
     uint8_t* buffer;
     bool     shouldFree = true;
@@ -137,6 +144,44 @@ DeepCompressor::BLOSC_compress_impl (
     _schunks.push_back (std::move (schunk));
     return size;
 }
+
+int
+DeepCompressor::BLOSC_compress_float_impl (
+    const char* inPtr, int inSize, PixelType type, const char*& out)
+{
+    blosc2_cparams cparams = getBloscCParams(type);;
+    cparams.typesize = pixelTypeSize (type);
+
+    blosc2_storage b2_storage = BLOSC2_STORAGE_DEFAULTS;
+    b2_storage.cparams        = &cparams;
+    b2_storage.contiguous     = true;
+
+    auto nElem = inSize / pixelTypeSize (type);
+    const int8_t ndim = 1;
+    const int64_t shape[] = {nElem};
+    const int32_t chunkshape[] = {nElem};
+    b2nd_context_t *ctx = b2nd_create_ctx(&b2_storage, ndim, shape, chunkshape, chunkshape, NULL, 0,
+                                           NULL, 0);
+
+    b2nd_array_t *arr;
+    b2nd_from_cbuffer(ctx, &arr, inPtr, inSize);
+    blosc2_schunk *schunk = arr->sc;
+
+    uint8_t* buffer;
+    bool shouldFree = true;
+    auto size = blosc2_schunk_to_buffer (schunk, &buffer, &shouldFree);
+    if (shouldFree) { _outBuffers.push_back ( raw_ptr ((char*) buffer, &free)); }
+
+    auto buf = malloc (size);
+    memcpy (buf, buffer, size);
+    out = (const char*)buf;
+    _outBuffers.push_back ( raw_ptr ((char*) buf, &free));
+
+    BLOSC_ERROR(b2nd_free_ctx(ctx));
+    BLOSC_ERROR(b2nd_free(arr));
+    return size;
+}
+
 
 int
 DeepCompressor::BLOSC_uncompress_impl (
@@ -173,70 +218,7 @@ DeepCompressor::uncompressSampleCountTable (
     auto ret = BLOSC_uncompress_impl (inPtr, inSize, outPtr);
     return ret;
 }
-/*
-Compressor::CompressorDataContext
-DeepCompressor::interlace (const Compressor::CompressorDataContext& ctx)
-{
-    _intermediateBuffer = raw_ptr ((char*) malloc (ctx.inSize), &free);
 
-    auto ret  = ctx;
-    ret.inPtr = _intermediateBuffer.get ();
-    memcpy ((void*) ret.inPtr, ctx.inPtr, ctx.inSize);
-    return ret;
-}*/
-/*
-Compressor::CompressorDataContext
-DeepCompressor::deinterlace (const Compressor::CompressorDataContext& ctx)
-{
-   // _intermediateBuffer = raw_ptr ((char*) malloc (ctx.inSize), &free);
-
-    const char* in  = (char*) ctx.inPtr;
-    //char*       out = (char*) _intermediateBuffer.get ();
-
-    auto start = in;
-    for (auto c = header ().channels ().begin ();
-         c != header ().channels ().end ();
-         ++c)
-    {
-        auto layout = DataLayout{start,  ctx.samplesStrideArray[ctx.samplesStrideArraySize-1] , c.channel ().type};
-        _dataLayout.push_back (layout);
-        auto bytes = ctx.samplesStrideArray[ctx.samplesStrideArraySize-1] * pixelTypeSize (c.channel ().type);
-        start += bytes;
-    }
-
-    for (auto l = _dataLayout.begin();l!=_dataLayout.end();++l)
-    {
-        auto buff = l->start;
-        for (int i=0;i<l->numElements;i++)
-        {
-            switch (l->type)
-            {
-                case PixelType::HALF: {
-                    half h;
-                    Xdr::read<CharPtrIO> (buff, h);
-                    break;
-                }
-                case PixelType::FLOAT: {
-                    float f;
-                    Xdr::read<CharPtrIO> (buff, f);
-                    //std::cout<<"i-f"<<i<<"||||"<<f<<std::endl;
-                    break;
-                }
-                case PixelType::UINT: {
-                    unsigned int ui;
-                    Xdr::read<CharPtrIO> (buff, ui);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    auto ret  = ctx;
-    //ret.inPtr = _intermediateBuffer.get ();
-    memcpy ((void*) ret.inPtr, ctx.inPtr, ctx.inSize);
-    return ret;
-}*/
 int
 DeepCompressor::compress (
     const Compressor::CompressorDataContext& ctx, const char*& outPtr)
@@ -261,33 +243,6 @@ DeepCompressor::compress (
 
         start += bytes;
     }
-
-   /* for (auto l = _dataLayout.begin();l!=_dataLayout.end();++l)
-    {
-        auto buff = l->start;
-        for (int i=0;i<l->numElements;i++)
-        {
-            switch (l->type)
-            {
-                case PixelType::HALF: {
-                    half h;
-                    Xdr::read<CharPtrIO> (buff, h);
-                    break;
-                }
-                case PixelType::FLOAT: {
-                    float f;
-                    Xdr::read<CharPtrIO> (buff, f);
-                    //std::cout<<"i-f"<<i<<"||||"<<f<<std::endl;
-                    break;
-                }
-                case PixelType::UINT: {
-                    unsigned int ui;
-                    Xdr::read<CharPtrIO> (buff, ui);
-                    break;
-                }
-            }
-        }
-    }*/
 
     totalSize += computeSerializationOverheadSize();
     auto outBuffer = raw_ptr ((char*) malloc (totalSize), &free);

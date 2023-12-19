@@ -171,7 +171,7 @@ exr_get_default_maximum_tile_size (int* w, int* h)
 
 /**************************************/
 
-static int sDefaultZipLevel = -1;
+static int sDefaultZipLevel = 12;
 
 void
 exr_set_default_zip_compression_level (int l)
@@ -207,4 +207,20 @@ void
 exr_get_default_dwa_compression_quality (float* q)
 {
     if (q) *q = sDefaultDwaLevel;
+}
+
+static int sDefaultZstdLevel = 5;
+
+void
+exr_set_default_zstd_compression_level (int q)
+{
+    if (q < 0) q = 0;
+    if (q > 9) q = 9;
+    sDefaultDwaLevel = q;
+}
+
+void
+exr_get_default_zstd_compression_level (int* q)
+{
+    if (q) *q = sDefaultZstdLevel;
 }

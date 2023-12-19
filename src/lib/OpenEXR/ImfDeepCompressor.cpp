@@ -81,22 +81,11 @@ DeepCompressor::BLOSC_compress_impl (const char* inPtr, int inSize, const char*&
     BloscInit::Init();
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
 
-   /* auto sz = 0;
-    for (ChannelList::ConstIterator c = header().channels().begin (); c != header().channels().end ();
-         ++c)
-    {
-        sz += pixelTypeSize(c.channel().type);
-        //std::cerr<<"Channel: "<<c.name()<<" type: "<<c.channel().type<<" size: "<<pixelTypeSize(c.channel().type)<<std::endl;
-    }
-
-    //std::cerr<<"Total:"<<sz<<std::endl;
-*/
     cparams.typesize = pixelTypeSize(PixelType::FLOAT); // Expect Float values
-    cparams.clevel = 9;  // 9 is about a 20% increase in compression compared to 5. Decompression speed is unchanged.
-    cparams.nthreads = 1;//ILMTHREAD_NAMESPACE::ThreadPool::globalThreadPool ().numThreads();
+    cparams.clevel = header().zstdCompressionLevel();  // 9 is about a 20% increase in compression compared to 5. Decompression speed is unchanged.
+    cparams.nthreads = 1;
     cparams.compcode = BLOSC_ZSTD; // Codec
     cparams.splitmode = BLOSC_NEVER_SPLIT;  // Split => multithreading, not split better compression
-    //cparams.filters[BLOSC2_MAX_FILTERS - 1] = BLOSC_SHUFFLE; // Default BYTE shuffle filter.
 
 
     blosc2_storage storage= BLOSC2_STORAGE_DEFAULTS;

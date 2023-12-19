@@ -29,7 +29,7 @@ openexr_define_library(OpenEXR
     ImfTiledMisc.h
     ImfZip.h
     ImfZipCompressor.h
-        ImfDeepCompressor.h
+        ImfZstdCompressor.h
     b44ExpLogTable.h
     dwaLookups.h
     ImfAcesFile.cpp
@@ -123,7 +123,7 @@ openexr_define_library(OpenEXR
     ImfWav.cpp
     ImfZip.cpp
     ImfZipCompressor.cpp
-        ImfDeepCompressor.cpp
+        ImfZstdCompressor.cpp
   HEADERS
     ImfAcesFile.h
     ImfArray.h

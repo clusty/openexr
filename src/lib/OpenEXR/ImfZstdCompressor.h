@@ -6,10 +6,10 @@
 #include "blosc2.h"
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
-class DeepCompressor : public Compressor
+class ZstdCompressor : public Compressor
 {
 public:
-    DeepCompressor (const Header& hdr, size_t maxScanLines);
+    ZstdCompressor (const Header& hdr, size_t maxScanLines);
 
 private:
     using schunk_ptr = std::unique_ptr<blosc2_schunk, decltype(&blosc2_schunk_free)> ;

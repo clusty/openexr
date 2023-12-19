@@ -264,7 +264,7 @@ void deepExamples()
             dataZ,
             dataA,
             sampleCount,
-            Compression::DEEP_CODEC);
+            Compression::ZSTD_COMPRESSION);
     }
     {
         boost::timer::auto_cpu_timer t ("zips scanline write %w seconds\n");

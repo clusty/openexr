@@ -3,11 +3,10 @@
 //
 
 #include <cstring>
-#include "ImfDeepCompressor.h"
+#include "ImfZstdCompressor.h"
 #include "IlmThread.h"
 //#include <zstd.h>
 #include "blosc2.h"
-#include "blosc2/filters-registry.h"
 #include "IlmThreadPool.h"
 #include "ImfChannelList.h"
 #include "ImfMisc.h"
@@ -15,19 +14,19 @@ namespace
 {
 /*
 int
-ZSTD_compress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr)
+ZSTD_compress_impl (const char* inPtr, int inSize, Imf::ZstdCompressor::raw_ptr& outPtr)
 {
     auto const cBuffSize = ZSTD_compressBound(inSize);
-    outPtr = Imf::DeepCompressor::raw_ptr((char*)malloc (cBuffSize), &free);
+    outPtr = Imf::ZstdCompressor::raw_ptr((char*)malloc (cBuffSize), &free);
     auto const cSize = ZSTD_compress(outPtr.get(), cBuffSize, inPtr, inSize, 15);
     return cSize;
 }
 
 int
-ZSTD_uncompress_impl (const char* inPtr, int inSize, Imf::DeepCompressor::raw_ptr& outPtr)
+ZSTD_uncompress_impl (const char* inPtr, int inSize, Imf::ZstdCompressor::raw_ptr& outPtr)
 {
     auto rSize = ZSTD_getFrameContentSize(inPtr, inSize);
-    outPtr = Imf::DeepCompressor::raw_ptr((char*)malloc (rSize), &free);
+    outPtr = Imf::ZstdCompressor::raw_ptr((char*)malloc (rSize), &free);
     auto const dSize = ZSTD_decompress(outPtr.get(), rSize, inPtr, inSize);
     return dSize;
 }
@@ -50,24 +49,24 @@ private:
 }
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
-DeepCompressor::DeepCompressor ( const Header& hdr, size_t maxScanlineSize): Compressor(hdr),
+ZstdCompressor::ZstdCompressor ( const Header& hdr, size_t maxScanlineSize): Compressor(hdr),
     _maxScanlineSize (maxScanlineSize),_outBuffer (nullptr, &free), _schunk (nullptr,&blosc2_schunk_free)
 {}
 
 int
-DeepCompressor::numScanLines () const
+ZstdCompressor::numScanLines () const
 {
     return 1; // max ? // Needs to be in sync with ImfCompressor::numLinesInBuffer
 }
 int
-DeepCompressor::compress (
+ZstdCompressor::compress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
     auto ret = BLOSC_compress_impl(inPtr, inSize, outPtr);
     return ret;
 }
 int
-DeepCompressor::uncompress (
+ZstdCompressor::uncompress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
     auto ret = BLOSC_uncompress_impl(inPtr, inSize, outPtr);
@@ -76,7 +75,7 @@ DeepCompressor::uncompress (
 
 
 int
-DeepCompressor::BLOSC_compress_impl (const char* inPtr, int inSize, const char*& out)
+ZstdCompressor::BLOSC_compress_impl (const char* inPtr, int inSize, const char*& out)
 {
     BloscInit::Init();
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
@@ -109,13 +108,13 @@ DeepCompressor::BLOSC_compress_impl (const char* inPtr, int inSize, const char*&
 }
 
 int
-DeepCompressor::BLOSC_uncompress_impl (const char* inPtr, int inSize, const char*& out)
+ZstdCompressor::BLOSC_uncompress_impl (const char* inPtr, int inSize, const char*& out)
 {
     auto in = const_cast<char*>(inPtr);
     _schunk = schunk_ptr (blosc2_schunk_from_buffer(reinterpret_cast<uint8_t*>(in), inSize, true), &blosc2_schunk_free);
 
     auto buffSize = _maxScanlineSize * numScanLines();
-    _outBuffer = Imf::DeepCompressor::raw_ptr((char*)malloc (buffSize), &free);
+    _outBuffer = Imf::ZstdCompressor::raw_ptr((char*)malloc (buffSize), &free);
     auto size = blosc2_schunk_decompress_chunk(_schunk.get(), 0, _outBuffer.get(), buffSize);
     out = _outBuffer.get();
     return size;

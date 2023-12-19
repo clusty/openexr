@@ -547,7 +547,7 @@ MultiPartInputFile::Data::chunkOffsetReconstruction (
             // (TODO) fix this so that it doesn't need to be revised for future compression types.
             switch (parts[i]->header.compression ())
             {
-                case DEEP_CODEC: rowsizes[i] = 1; break;
+                case ZSTD_COMPRESSION: rowsizes[i] = 1; break;
                 case DWAB_COMPRESSION: rowsizes[i] = 256; break;
                 case PIZ_COMPRESSION:
                 case B44_COMPRESSION:

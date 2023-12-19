@@ -701,13 +701,13 @@ Header::zipCompressionLevel () const
 int&
 Header::zstdCompressionLevel ()
 {
-    return retrieveCompressionRecord (this).zip_level;
+    return retrieveCompressionRecord (this).zstd_level;
 }
 
 int
 Header::zstdCompressionLevel () const
 {
-    return retrieveCompressionRecord (this).zip_level;
+    return retrieveCompressionRecord (this).zstd_level;
 }
 
 float&

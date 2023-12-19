@@ -25,8 +25,6 @@
 
 #include "namespaceAlias.h"
 
-#include <boost/timer/timer.hpp>
-
 using namespace IMF;
 using namespace std;
 using namespace IMATH_NAMESPACE;
@@ -124,7 +122,7 @@ readDeepScanlineFile (
 unsigned int getPixelSampleCount (int i, int j)
 {
     // Dummy code creating deep data from a flat image
-    return 10;
+    return 1;
 }
 
 Array2D<float> testDataZ;
@@ -234,8 +232,8 @@ writeDeepScanlineFile (
 
 void deepExamples()
 {
-    int w = 1920;
-    int h = 1080;
+    int w = 800;
+    int h = 600;
     
     Box2i window;
     window.min.setValue(0, 0);
@@ -256,7 +254,6 @@ void deepExamples()
     drawImage2(testDataA, testDataZ, w, h);
 
     {
-        boost::timer::auto_cpu_timer t("deep scanline write %w seconds\n");
         writeDeepScanlineFile (
             "test.deep.exr",
             window,
@@ -267,7 +264,6 @@ void deepExamples()
             Compression::ZSTD_COMPRESSION);
     }
     {
-        boost::timer::auto_cpu_timer t ("zips scanline write %w seconds\n");
         writeDeepScanlineFile (
             "test.zips.exr",
             window,
@@ -278,14 +274,11 @@ void deepExamples()
             Compression::ZIPS_COMPRESSION);
     }
     {
-        boost::timer::auto_cpu_timer t ("deep scanline read %w seconds\n");
         readDeepScanlineFile (
             "test.deep.exr", window, window, dataZ, dataA, sampleCount);
     }
     {
-        boost::timer::auto_cpu_timer t ("zips scanline read %w seconds\n");
         readDeepScanlineFile (
             "test.zips.exr", window, window, dataZ, dataA, sampleCount);
     }
-    //readDeepScanlineFile ("test.deep.zstd.exr", window, window, dataZ, dataA, sampleCount);
 }

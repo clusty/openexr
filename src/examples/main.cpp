@@ -15,33 +15,31 @@
 
 #include <iostream>
 #include <stdexcept>
-#include "ImfThreading.h"
+
 int
 main (int argc, char* argv[])
 {
     try
     {
-        OPENEXR_IMF_NAMESPACE::setGlobalThreadCount (20);
-        /*rgbaInterfaceExamples ();
+        rgbaInterfaceExamples ();
         generalInterfaceExamples ();
 
         rgbaInterfaceTiledExamples ();
         generalInterfaceTiledExamples ();
-*/
 
         deepExamples ();
-       /* deepTiledExamples ();
+        deepTiledExamples ();
 
         lowLevelIoExamples ();
 
-        previewImageExamples ();*/
+        previewImageExamples ();
         
         // This example uses the files created by
         //   generalInterfaceExamples,
         //   generalInterfaceTiledExamples,
         //   deepExamples,
         //   deepTiledExamples
-      //  multipartExamples ();
+        multipartExamples ();
     }
     catch (const std::exception& exc)
     {

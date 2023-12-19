@@ -4,7 +4,7 @@
 
 #include <cstring>
 #include "ImfZstdCompressor.h"
-#include "IlmThread.h"
+
 //#include <zstd.h>
 #include "blosc2.h"
 #include "IlmThreadPool.h"

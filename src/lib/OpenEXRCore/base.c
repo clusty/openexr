@@ -171,7 +171,7 @@ exr_get_default_maximum_tile_size (int* w, int* h)
 
 /**************************************/
 
-static int sDefaultZipLevel = 12;
+static int sDefaultZipLevel = -1;
 
 void
 exr_set_default_zip_compression_level (int l)

@@ -9,7 +9,7 @@ OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
 class ZstdCompressor : public Compressor
 {
 public:
-    ZstdCompressor (const Header& hdr, size_t maxScanLines);
+    ZstdCompressor (const Header& hdr, size_t maxScanLines, size_t numScanLines);
 
 private:
     using schunk_ptr = std::unique_ptr<blosc2_schunk, decltype(&blosc2_schunk_free)> ;
@@ -17,6 +17,7 @@ private:
     raw_ptr _outBuffer;
     schunk_ptr _schunk;
     size_t  _maxScanlineSize;
+    size_t  _numScanLines;
     int numScanLines () const override; // max
     int compress (
         const char* inPtr, int inSize, int minY, const char*& outPtr) override;

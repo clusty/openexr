@@ -49,14 +49,14 @@ private:
 }
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
-ZstdCompressor::ZstdCompressor ( const Header& hdr, size_t maxScanlineSize): Compressor(hdr),
-    _maxScanlineSize (maxScanlineSize),_outBuffer (nullptr, &free), _schunk (nullptr,&blosc2_schunk_free)
+ZstdCompressor::ZstdCompressor ( const Header& hdr, size_t maxScanlineSize, size_t numScanLines): Compressor(hdr),
+    _maxScanlineSize (maxScanlineSize),_numScanLines(numScanLines),_outBuffer (nullptr, &free), _schunk (nullptr,&blosc2_schunk_free)
 {}
 
 int
 ZstdCompressor::numScanLines () const
 {
-    return 1; // max ? // Needs to be in sync with ImfCompressor::numLinesInBuffer
+    return _numScanLines; // Needs to be in sync with ImfCompressor::numLinesInBuffer
 }
 int
 ZstdCompressor::compress (

@@ -144,7 +144,7 @@ newCompressor (Compression c, size_t maxScanLineSize, const Header& hdr)
                 256,
                 DwaCompressor::STATIC_HUFFMAN);
         case ZSTD_COMPRESSION:
-            return new ZstdCompressor (hdr, maxScanLineSize);
+            return new ZstdCompressor (hdr, maxScanLineSize, 32);
         default: return 0;
     }
 }
@@ -166,7 +166,7 @@ numLinesInBuffer (Compression comp)
         case B44_COMPRESSION:
         case B44A_COMPRESSION:
         case DWAA_COMPRESSION: return 32;
-        case ZSTD_COMPRESSION: return 1;// FIXME
+        case ZSTD_COMPRESSION: return 32;// FIXME
         case DWAB_COMPRESSION: return 256;
 
         default: throw IEX_NAMESPACE::ArgExc ("Unknown compression type");
@@ -187,6 +187,9 @@ newTileCompressor (
         case ZIP_COMPRESSION:
 
             return new ZipCompressor (hdr, tileLineSize, numTileLines);
+        case ZSTD_COMPRESSION:
+
+            return new ZstdCompressor (hdr, tileLineSize, numTileLines);
 
         case PIZ_COMPRESSION:
 

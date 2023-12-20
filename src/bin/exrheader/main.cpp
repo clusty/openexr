@@ -65,7 +65,7 @@ printCompression (Compression c)
 
         case DWAB_COMPRESSION: cout << "dwa, medium scanline blocks"; break;
 
-        case ZSTD_COMPRESSION: cout << "zstd, single scanline"; break;
+        case ZSTD_COMPRESSION: cout << "zstd"; break;
 
         default: cout << int (c); break;
     }

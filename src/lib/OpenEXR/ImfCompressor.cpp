@@ -64,8 +64,8 @@ isValidCompression (Compression c)
         case B44_COMPRESSION:
         case B44A_COMPRESSION:
         case DWAA_COMPRESSION:
-        case ZSTD_COMPRESSION:
-        case DWAB_COMPRESSION: return true;
+        case DWAB_COMPRESSION:
+        case ZSTD_COMPRESSION: return true;
 
         default: return false;
     }
@@ -143,6 +143,7 @@ newCompressor (Compression c, size_t maxScanLineSize, const Header& hdr)
                 static_cast<int> (maxScanLineSize),
                 256,
                 DwaCompressor::STATIC_HUFFMAN);
+
         case ZSTD_COMPRESSION:
             return new ZstdCompressor (hdr, maxScanLineSize, 32);
         default: return 0;

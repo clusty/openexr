@@ -11,7 +11,7 @@ class BloscInit
 {
 public:
     static void Init () { getInstance (); }
-    BloscInit (const BloscInit&) = delete;
+    BloscInit (const BloscInit&)            = delete;
     BloscInit& operator= (const BloscInit&) = delete;
 
 private:
@@ -44,7 +44,18 @@ int
 ZstdCompressor::compress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
-    auto ret = BLOSC_compress_impl (inPtr, inSize, outPtr);
+    int typeSize = std::numeric_limits<int>::min ();
+    for (auto it = header ().channels ().begin ();
+         it != header ().channels ().end ();
+         ++it)
+    {
+        // BLOSC prefilter is affected by the typesize. Initializing to max will ensure that a channel is not split in 2 and filtered separately.
+        // probably compression can be improved for non-deep images by compressing every channel separately with the correct typeSize
+        // (much harder to do for Deep-Data).
+        typeSize = std::max (typeSize, Imf::pixelTypeSize (it.channel ().type));
+    }
+
+    auto ret = BLOSC_compress_impl (inPtr, inSize, typeSize, outPtr);
     return ret;
 }
 int
@@ -57,12 +68,12 @@ ZstdCompressor::uncompress (
 
 int
 ZstdCompressor::BLOSC_compress_impl (
-    const char* inPtr, int inSize, const char*& out)
+    const char* inPtr, int inSize, int typeSize, const char*& out)
 {
     BloscInit::Init ();
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
 
-    cparams.typesize = pixelTypeSize (PixelType::FLOAT); // Expect Float values
+    cparams.typesize = typeSize;
     cparams.clevel =
         header ()
             .zstdCompressionLevel (); // 9 is about a 20% increase in compression compared to 5. Decompression speed is unchanged.

@@ -25,7 +25,8 @@ private:
                const char* inPtr, int inSize, int minY, const char*& outPtr) override;
     int uncompress (
         const char* inPtr, int inSize, int minY, const char*& outPtr) override;
-    int BLOSC_compress_impl (const char* inPtr, int inSize, const char*& out);
+    int BLOSC_compress_impl (
+        const char* inPtr, int inSize, int typeSize, const char*& out);
     int BLOSC_uncompress_impl (const char* inPtr, int inSize, const char*& out);
 };
 

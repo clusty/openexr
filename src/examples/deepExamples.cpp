@@ -149,6 +149,7 @@ writeDeepScanlineFile (
     Array2D<half*>& dataA,
 
     Array2D<unsigned int>& sampleCount,
+    Compression            compression = Compression::ZIPS_COMPRESSION)
     Compression compression = Compression::ZIPS_COMPRESSION )
 
 {

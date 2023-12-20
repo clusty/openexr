@@ -74,7 +74,7 @@ struct CompressionRecord
     }
     int   zip_level;
     float dwa_level;
-    int zstd_level;
+    int   zstd_level;
 };
 // NB: This is extra complicated than one would normally write to
 // handle scenario that seems to happen on MacOS/Windows (probably

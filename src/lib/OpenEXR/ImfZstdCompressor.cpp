@@ -11,7 +11,7 @@ class BloscInit
 {
 public:
     static void Init () { getInstance (); }
-    BloscInit (const BloscInit&)                       = delete;
+    BloscInit (const BloscInit&)            = delete;
     BloscInit& operator= (const BloscInit&) = delete;
 
 private:
@@ -56,7 +56,17 @@ ZstdCompressor::compress (
         typeSize = std::max (typeSize, Imf::pixelTypeSize (it.channel ().type));
     }
 
-    auto ret = BLOSC_compress_impl (inPtr, inSize, typeSize, outPtr);
+    auto ret   = BLOSC_compress_impl (inPtr, inSize, typeSize, outPtr);
+    auto data  = malloc (Xdr::size<int> () + ret);
+    auto write = (char*) data;
+
+    Xdr::write<CharPtrIO> (write, Versions::LATEST);
+
+    memcpy (write, outPtr, ret);
+    outPtr = (char*) data;
+
+    _outBuffer = raw_ptr ((char*) data, &free);
+
     return ret;
 }
 
@@ -64,8 +74,18 @@ int
 ZstdCompressor::uncompress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
 {
-    auto ret = BLOSC_uncompress_impl (inPtr, inSize, outPtr);
-    return ret;
+    auto read = (const char*) inPtr;
+    int  v;
+    Xdr::read<CharPtrIO> (read, v);
+    if (v == Versions::SINGLE_BLOB)
+    {
+        return BLOSC_uncompress_impl_single_blob (
+            read, inSize - Xdr::size<int> (), outPtr);
+    }
+    else
+    {
+        throw Iex::InputExc ("Unsupported ZstdCompressor version");
+    }
 }
 
 int
@@ -102,7 +122,7 @@ ZstdCompressor::BLOSC_compress_impl (
 }
 
 int
-ZstdCompressor::BLOSC_uncompress_impl (
+ZstdCompressor::BLOSC_uncompress_impl_single_blob (
     const char* inPtr, int inSize, const char*& out)
 {
     auto in = const_cast<char*> (inPtr);

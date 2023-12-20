@@ -11,7 +11,7 @@ class BloscInit
 {
 public:
     static void Init () { getInstance (); }
-    BloscInit (const BloscInit&) = delete;
+    BloscInit (const BloscInit&)            = delete;
     BloscInit& operator= (const BloscInit&) = delete;
 
 private:
@@ -40,6 +40,7 @@ ZstdCompressor::numScanLines () const
 {
     return _numScanLines; // Needs to be in sync with ImfCompressor::numLinesInBuffer
 }
+
 int
 ZstdCompressor::compress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
@@ -47,6 +48,7 @@ ZstdCompressor::compress (
     auto ret = BLOSC_compress_impl (inPtr, inSize, outPtr);
     return ret;
 }
+
 int
 ZstdCompressor::uncompress (
     const char* inPtr, int inSize, int minY, const char*& outPtr)
@@ -63,9 +65,9 @@ ZstdCompressor::BLOSC_compress_impl (
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
 
     cparams.typesize = pixelTypeSize (PixelType::FLOAT); // Expect Float values
-    cparams.clevel =
-        header ()
-            .zstdCompressionLevel (); // 9 is about a 20% increase in compression compared to 5. Decompression speed is unchanged.
+    // clevel 9 is about a 20% increase in compression compared to 5.
+    // Decompression speed is unchanged.
+    cparams.clevel   = header ().zstdCompressionLevel ();
     cparams.nthreads = 1;
     cparams.compcode = BLOSC_ZSTD; // Codec
     cparams.splitmode =

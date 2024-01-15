@@ -45,6 +45,7 @@ openexr_define_library(OpenEXRCore
     internal_piz.c
     internal_dwa.c
     internal_huf.c
+    internal_zstd.c
 
     attributes.c
     string.c
@@ -111,3 +112,7 @@ if (DEFINED EXR_DEFLATE_LIB)
     target_link_libraries(OpenEXRCore PUBLIC ${EXR_DEFLATE_LIB})
   endif()
 endif()
+
+target_include_directories(OpenEXRCore PUBLIC "/home/vladal/bin/include/")
+target_link_directories(OpenEXRCore PUBLIC "/home/vladal/bin/lib")
+target_link_libraries(OpenEXRCore PUBLIC "dl" "blosc2")

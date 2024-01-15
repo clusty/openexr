@@ -103,6 +103,7 @@ openexr_define_library(OpenEXRCore
 
   DEPENDENCIES
     Imath::Imath
+    Blosc2::blosc2_static
   )
 
 if (DEFINED EXR_DEFLATE_LIB)
@@ -112,7 +113,3 @@ if (DEFINED EXR_DEFLATE_LIB)
     target_link_libraries(OpenEXRCore PUBLIC ${EXR_DEFLATE_LIB})
   endif()
 endif()
-
-target_include_directories(OpenEXRCore PUBLIC "/home/vladal/bin/include/")
-target_link_directories(OpenEXRCore PUBLIC "/home/vladal/bin/lib")
-target_link_libraries(OpenEXRCore PUBLIC "dl" "blosc2")

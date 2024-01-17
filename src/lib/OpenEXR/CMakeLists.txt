@@ -3,13 +3,15 @@
 
 find_package(Python3 QUIET)
 
+file(GLOB COMPRESSOR_HEADERS Imf*Compressor.h)
+message(STATUS "headers: ${COMPRESSOR_HEADERS}")
 add_custom_command(
   OUTPUT ImfCompression.h
   COMMAND
   ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/register_codecs.py -i
   ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in
   ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in ${COMPRESSOR_HEADERS}
   COMMENT "Registering codecs"
   VERBATIM)
 # add_custom_target(

@@ -134,7 +134,7 @@ add_executable(OpenEXRTest
   tmpDir.h
 )
 target_compile_definitions(OpenEXRTest PRIVATE ILM_IMF_TEST_IMAGEDIR="${CMAKE_CURRENT_SOURCE_DIR}/")
-target_link_libraries(OpenEXRTest OpenEXR::OpenEXR)
+target_link_libraries(OpenEXRTest OpenEXR::OpenEXR OpenEXR::OpenEXRCore)
 set_target_properties(OpenEXRTest PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )

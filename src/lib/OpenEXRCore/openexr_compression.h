@@ -45,6 +45,15 @@ exr_result_t exr_uncompress_buffer (
     size_t              out_bytes_avail,
     size_t*             actual_out);
 
+EXR_EXPORT
+long BLOSC_compress_impl (
+    char* inPtr, int inSize, void * outPtr, int outPtrSize);
+
+EXR_EXPORT
+long
+BLOSC_uncompress_impl_single_blob (
+    const char* inPtr, uint64_t inSize, void ** outPtr, uint64_t outPtrSize);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

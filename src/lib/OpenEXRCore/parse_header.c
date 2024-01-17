@@ -2364,7 +2364,7 @@ internal_exr_compute_chunk_offset_size (struct _internal_exr_part* curpart)
             case EXR_COMPRESSION_B44A:
             case EXR_COMPRESSION_DWAA: linePerChunk = 32; break;
             case EXR_COMPRESSION_DWAB: linePerChunk = 256; break;
-            case EXR_COMPRESSION_ZSTD: linePerChunk = 256; break;
+            case EXR_COMPRESSION_ZSTD: linePerChunk = 1; break;
             case EXR_COMPRESSION_LAST_TYPE:
             default:
                 /* ERROR CONDITION */

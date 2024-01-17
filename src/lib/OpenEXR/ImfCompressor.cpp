@@ -59,14 +59,7 @@ isValidCompression (Compression c)
 bool
 isLossyCompression (Compression c)
 {
-    switch (c)
-    {
-        case B44_COMPRESSION:
-        case B44A_COMPRESSION:
-        case DWAA_COMPRESSION:
-        case DWAB_COMPRESSION: return true;
-        default: return false;
-    }
+    return isLossyCompressionId(c);
 }
 
 bool

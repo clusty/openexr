@@ -53,19 +53,19 @@ Compressor::uncompressTile (
 bool
 isValidCompression (Compression c)
 {
-    return isValidCompressionId(c);
+    return isValidCompressionId (c);
 }
 
 bool
 isLossyCompression (Compression c)
 {
-    return isLossyCompressionId(c);
+    return isLossyCompressionId (c);
 }
 
 bool
 isValidDeepCompression (Compression c)
 {
-    return isDeepCompressionId(c);
+    return isDeepCompressionId (c);
 }
 
 Compressor*
@@ -127,22 +127,10 @@ newCompressor (Compression c, size_t maxScanLineSize, const Header& hdr)
 int
 numLinesInBuffer (Compression comp)
 {
-    switch (comp)
-    {
-        case NO_COMPRESSION:
-        case RLE_COMPRESSION:
-        case ZIPS_COMPRESSION: return 1;
-        case ZIP_COMPRESSION: return 16;
-        case PIZ_COMPRESSION: return 32;
-        case PXR24_COMPRESSION: return 16;
-        case B44_COMPRESSION:
-        case B44A_COMPRESSION:
-        case DWAA_COMPRESSION: return 32;
-        case ZSTD_COMPRESSION: return 32;
-        case DWAB_COMPRESSION: return 256;
-
-        default: throw IEX_NAMESPACE::ArgExc ("Unknown compression type");
-    }
+    int numScanlines = getCompressionNumScanlines (comp);
+    if (numScanlines < 1)
+        throw IEX_NAMESPACE::ArgExc ("Unknown compression type");
+    return numScanlines;
 }
 
 Compressor*

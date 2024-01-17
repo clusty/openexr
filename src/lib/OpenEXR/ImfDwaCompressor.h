@@ -3,6 +3,21 @@
 // Copyright (c) DreamWorks Animation LLC and Contributors of the OpenEXR Project
 //
 
+/* REGISTER DWAA_COMPRESSION
+id: 8
+name: dwaa
+desc: lossy DCT based compression, in blocks of 32 scanlines
+numScanlines: 32
+lossy: true
+*/
+/* REGISTER DWAB_COMPRESSION
+id: 9
+name: dwab
+desc: lossy DCT based compression, in blocks of 256 scanlines
+numScanlines: 256
+lossy: true
+*/
+
 #ifndef INCLUDED_IMF_DWA_COMRESSOR_H
 #define INCLUDED_IMF_DWA_COMRESSOR_H
 

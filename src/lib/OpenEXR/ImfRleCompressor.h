@@ -3,6 +3,14 @@
 // Copyright (c) Contributors to the OpenEXR Project.
 //
 
+/* REGISTER RLE_COMPRESSION
+id: 1
+name: rle
+desc: run-length encoding
+numScanlines: 1
+lossy: false
+*/
+
 #ifndef INCLUDED_IMF_RLE_COMPRESSOR_H
 #define INCLUDED_IMF_RLE_COMPRESSOR_H
 
@@ -24,10 +32,10 @@ public:
     RleCompressor (const Header& hdr, size_t maxScanLineSize);
     virtual ~RleCompressor ();
 
-    RleCompressor (const RleCompressor& other) = delete;
+    RleCompressor (const RleCompressor& other)            = delete;
     RleCompressor& operator= (const RleCompressor& other) = delete;
     RleCompressor (RleCompressor&& other)                 = delete;
-    RleCompressor& operator= (RleCompressor&& other) = delete;
+    RleCompressor& operator= (RleCompressor&& other)      = delete;
 
     virtual int numScanLines () const;
 

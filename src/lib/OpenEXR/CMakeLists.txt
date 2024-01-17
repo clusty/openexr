@@ -1,5 +1,21 @@
-# SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) Contributors to the OpenEXR Project.
+# SPDX-License-Identifier: BSD-3-Clause Copyright (c) Contributors to the
+# OpenEXR Project.
+
+find_package(Python3 QUIET)
+
+add_custom_command(
+  OUTPUT ImfCompression.h
+  COMMAND
+  ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/register_codecs.py -i
+  ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in
+  COMMENT "Registering codecs"
+  VERBATIM)
+# add_custom_target(
+#   generate_compression_header 
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h)
+message(STATUS "Compresssion methods registered")
 
 openexr_define_library(OpenEXR
   PRIV_EXPORT OPENEXR_EXPORTS

@@ -3,6 +3,14 @@
 // Copyright (c) Contributors to the OpenEXR Project.
 //
 
+/* REGISTER PIZ_COMPRESSION
+id: 4
+name: piz
+desc: piz-based wavelet compression, in blocks of 32 scan lines
+numScanlines: 32
+lossy: false
+*/
+
 #ifndef INCLUDED_IMF_PIZ_COMPRESSOR_H
 #define INCLUDED_IMF_PIZ_COMPRESSOR_H
 
@@ -26,10 +34,10 @@ public:
 
     virtual ~PizCompressor ();
 
-    PizCompressor (const PizCompressor& other) = delete;
+    PizCompressor (const PizCompressor& other)            = delete;
     PizCompressor& operator= (const PizCompressor& other) = delete;
     PizCompressor (PizCompressor&& other)                 = delete;
-    PizCompressor& operator= (PizCompressor&& other) = delete;
+    PizCompressor& operator= (PizCompressor&& other)      = delete;
 
     virtual int numScanLines () const;
 

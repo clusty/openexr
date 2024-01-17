@@ -37,55 +37,58 @@ usageMessage (ostream& stream, const char* program_name, bool verbose = false)
 
     if (verbose)
     {
+        std::string compressionNames;
+        getCompressionNamesString("/", compressionNames);
+
         stream << "\n"
-            "Read an OpenEXR image from infile, produce a tiled\n"
-            "version of the image, and save the result in outfile.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -o            produces a ONE_LEVEL image (default)\n"
-            "\n"
-            "  -m            produces a MIPMAP_LEVELS multiresolution image\n"
-            "\n"
-            "  -r            produces a RIPMAP_LEVELS multiresolution image\n"
-            "\n"
-            "  -f c          when a MIPMAP_LEVELS or RIPMAP_LEVELS image\n"
-            "                is produced, image channel c will be resampled\n"
-            "                without low-pass filtering.  This option can\n"
-            "                be specified multiple times to disable low-pass\n"
-            "                filtering for multiple channels.\n"
-            "\n"
-            "  -e x y        when a MIPMAP_LEVELS or RIPMAP_LEVELS image\n"
-            "                is produced, low-pass filtering takes samples\n"
-            "                outside the image's data window.  This requires\n"
-            "                extrapolating the image.  Option -e specifies\n"
-            "                how the image is extrapolated horizontally and\n"
-            "                vertically (black/clamp/periodic/mirror, default\n"
-            "                is clamp).\n"
-            "\n"
-            "  -t x y        sets the tile size in the output image to\n"
-            "                x by y pixels (default is 64 by 64)\n"
-            "\n"
-            "  -d            sets level size rounding to ROUND_DOWN (default)\n"
-            "\n"
-            "  -u            sets level size rounding to ROUND_UP\n"
-            "\n"
-            "  -z x          sets the data compression method to x\n"
-            "                (none/rle/zip/piz/pxr24/b44/b44a/dwaa/dwab,\n"
-            "                default is zip)\n"
-            "\n"
-            "  -v            verbose mode\n"
-             "\n"
-            "  -h, --help    print this message\n"
-            "\n"
-            "      --version print version information\n"
-            "\n"
-            "Multipart Options:\n"
-            "\n"
-            "  -p i          part number, default is 0\n"
-            "\n"
-            "Report bugs via https://github.com/AcademySoftwareFoundation/openexr/issues or email security@openexr.com\n"
-            "";
+               "Read an OpenEXR image from infile, produce a tiled\n"
+               "version of the image, and save the result in outfile.\n"
+               "\n"
+               "Options:\n"
+               "\n"
+               "  -o            produces a ONE_LEVEL image (default)\n"
+               "\n"
+               "  -m            produces a MIPMAP_LEVELS multiresolution image\n"
+               "\n"
+               "  -r            produces a RIPMAP_LEVELS multiresolution image\n"
+               "\n"
+               "  -f c          when a MIPMAP_LEVELS or RIPMAP_LEVELS image\n"
+               "                is produced, image channel c will be resampled\n"
+               "                without low-pass filtering.  This option can\n"
+               "                be specified multiple times to disable low-pass\n"
+               "                filtering for multiple channels.\n"
+               "\n"
+               "  -e x y        when a MIPMAP_LEVELS or RIPMAP_LEVELS image\n"
+               "                is produced, low-pass filtering takes samples\n"
+               "                outside the image's data window.  This requires\n"
+               "                extrapolating the image.  Option -e specifies\n"
+               "                how the image is extrapolated horizontally and\n"
+               "                vertically (black/clamp/periodic/mirror, default\n"
+               "                is clamp).\n"
+               "\n"
+               "  -t x y        sets the tile size in the output image to\n"
+               "                x by y pixels (default is 64 by 64)\n"
+               "\n"
+               "  -d            sets level size rounding to ROUND_DOWN (default)\n"
+               "\n"
+               "  -u            sets level size rounding to ROUND_UP\n"
+               "\n"
+               "  -z x          sets the data compression method to x\n"
+               "                (" << compressionNames.c_str() << ",\n"
+               "                default is zip)\n"
+               "\n"
+               "  -v            verbose mode\n"
+               "\n"
+               "  -h, --help    print this message\n"
+               "\n"
+               "      --version print version information\n"
+               "\n"
+               "Multipart Options:\n"
+               "\n"
+               "  -p i          part number, default is 0\n"
+               "\n"
+               "Report bugs via https://github.com/AcademySoftwareFoundation/openexr/issues or email security@openexr.com\n"
+               "";
     }
 }
 
@@ -93,48 +96,12 @@ Compression
 getCompression (const string& str)
 {
     Compression c;
-
-    if (str == "no" || str == "none" || str == "NO" || str == "NONE")
-    {
-        c = NO_COMPRESSION;
-    }
-    else if (str == "rle" || str == "RLE")
-    {
-        c = RLE_COMPRESSION;
-    }
-    else if (str == "zip" || str == "ZIP")
-    {
-        c = ZIP_COMPRESSION;
-    }
-    else if (str == "piz" || str == "PIZ")
-    {
-        c = PIZ_COMPRESSION;
-    }
-    else if (str == "pxr24" || str == "PXR24")
-    {
-        c = PXR24_COMPRESSION;
-    }
-    else if (str == "b44" || str == "B44")
-    {
-        c = B44_COMPRESSION;
-    }
-    else if (str == "b44a" || str == "B44A")
-    {
-        c = B44A_COMPRESSION;
-    }
-    else if (str == "dwaa" || str == "DWAA")
-    {
-        c = DWAA_COMPRESSION;
-    }
-    else if (str == "dwab" || str == "DWAB")
-    {
-        c = DWAB_COMPRESSION;
-    }
-    else
+    getCompressionIdFromName (str, c);
+    if (c == Compression::NUM_COMPRESSION_METHODS)
     {
         std::stringstream e;
         e << "Unknown compression method \"" << str << "\"";
-        throw invalid_argument(e.str());
+        throw invalid_argument (e.str ());
     }
 
     return c;
@@ -337,7 +304,7 @@ main (int argc, char** argv)
             else if (!strcmp (argv[i], "--version"))
             {
                 const char* libraryVersion = getLibraryVersion();
-            
+
                 cout << "exrmaketiled (OpenEXR) " << OPENEXR_VERSION_STRING;
                 if (strcmp(libraryVersion, OPENEXR_VERSION_STRING))
                     cout << "(OpenEXR version " << libraryVersion << ")";
@@ -351,12 +318,12 @@ main (int argc, char** argv)
                 //
                 // Image file name
                 //
-            
+
                 if (inFile == 0)
                     inFile = argv[i];
                 else
                     outFile = argv[i];
-            
+
                 i += 1;
             }
         }

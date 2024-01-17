@@ -53,22 +53,7 @@ Compressor::uncompressTile (
 bool
 isValidCompression (Compression c)
 {
-    switch (c)
-    {
-        case NO_COMPRESSION:
-        case RLE_COMPRESSION:
-        case ZIPS_COMPRESSION:
-        case ZIP_COMPRESSION:
-        case PIZ_COMPRESSION:
-        case PXR24_COMPRESSION:
-        case B44_COMPRESSION:
-        case B44A_COMPRESSION:
-        case DWAA_COMPRESSION:
-        case DWAB_COMPRESSION:
-        case ZSTD_COMPRESSION: return true;
-
-        default: return false;
-    }
+    return isValidCompressionId(c);
 }
 
 bool

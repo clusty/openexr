@@ -3,6 +3,14 @@
 // Copyright (c) Pixar Animation Studios and Contributors of the OpenEXR Project
 //
 
+/* REGISTER PXR24_COMPRESSION
+id: 5
+name: pxr24
+desc: lossy 24-bit float compression, in blocks of 16 scan lines
+numScanlines: 16
+lossy: true
+*/
+
 #ifndef INCLUDED_IMF_PXR24_COMPRESSOR_H
 #define INCLUDED_IMF_PXR24_COMPRESSOR_H
 
@@ -24,10 +32,10 @@ public:
 
     virtual ~Pxr24Compressor ();
 
-    Pxr24Compressor (const Pxr24Compressor& other) = delete;
+    Pxr24Compressor (const Pxr24Compressor& other)            = delete;
     Pxr24Compressor& operator= (const Pxr24Compressor& other) = delete;
     Pxr24Compressor (Pxr24Compressor&& other)                 = delete;
-    Pxr24Compressor& operator= (Pxr24Compressor&& other) = delete;
+    Pxr24Compressor& operator= (Pxr24Compressor&& other)      = delete;
 
     virtual int numScanLines () const;
 

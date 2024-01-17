@@ -5,6 +5,14 @@
 // Copyright (c) Contributors to the OpenEXR Project.
 //
 
+/* REGISTER ZSTD_COMPRESSION
+id: 10
+name: zstd
+desc: zstandard compression, in blocks of 32 scan lines
+numScanlines: 32
+lossy: false
+*/
+
 #include <memory>
 #include "ImfNamespace.h"
 #include "ImfCompressor.h"

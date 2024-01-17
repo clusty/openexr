@@ -6,17 +6,19 @@
 /* REGISTER ZIPS_COMPRESSION
 id: 2
 name: zips
-desc: zlib compression, one scan line at a time
+desc: zlib compression, one scan line at a time.
 numScanlines: 1
 lossy: false
+deep: true
 */
 
 /* REGISTER ZIP_COMPRESSION
 id: 3
 name: zip
-desc: zlib compression, in blocks of 16 scan lines
+desc: zlib compression, in blocks of 16 scan lines.
 numScanlines: 16
 lossy: false
+deep: false
 */
 
 

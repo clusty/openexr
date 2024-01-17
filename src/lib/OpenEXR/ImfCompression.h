@@ -22,16 +22,36 @@ OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
 enum IMF_EXPORT_ENUM Compression
 {
     NO_COMPRESSION = 0, // no compression
-    RLE_COMPRESSION = 1, // run-length encoding
-    ZIPS_COMPRESSION = 2, // zlib compression, one scan line at a time
-    ZIP_COMPRESSION = 3, // zlib compression, in blocks of 16 scan lines
-    PIZ_COMPRESSION = 4, // piz-based wavelet compression, in blocks of 32 scan lines
-    PXR24_COMPRESSION = 5, // lossy 24-bit float compression, in blocks of 16 scan lines
-    B44_COMPRESSION = 6, // lossy 4-by-4 pixel block compression, fixed compression rate
-    B44A_COMPRESSION = 7, // lossy 4-by-4 pixel block compression, flat fields are compressed more
-    DWAA_COMPRESSION = 8, // lossy DCT based compression, in blocks of 32 scanlines
-    DWAB_COMPRESSION = 9, // lossy DCT based compression, in blocks of 256 scanlines
-    ZSTD_COMPRESSION = 10, // zstandard compression, in blocks of 32 scan lines
+
+    RLE_COMPRESSION = 1, // run-length encoding.
+
+    ZIPS_COMPRESSION = 2, // zlib compression, one scan line at a time.
+
+    ZIP_COMPRESSION = 3, // zlib compression, in blocks of 16 scan lines.
+
+    PIZ_COMPRESSION = 4, // piz-based wavelet compression, in blocks of 32 scan
+                         // lines.
+
+    PXR24_COMPRESSION = 5, // lossy 24-bit float compression, in blocks of 16
+                           // scan lines.
+
+    B44_COMPRESSION = 6, // lossy 4-by-4 pixel block compression, fixed
+                         // compression rate.
+
+    B44A_COMPRESSION = 7, // lossy 4-by-4 pixel block compression, flat fields
+                          // are compressed more.
+
+    DWAA_COMPRESSION = 8, // lossy DCT based compression, in blocks of 32
+                          // scanlines. More efficient for partial buffer
+                          // access.
+
+    DWAB_COMPRESSION = 9, // lossy DCT based compression, in blocks of 256
+                          // scanlines. More efficient space wise and faster to
+                          // decode full frames than DWAA_COMPRESSION.
+
+    ZSTD_COMPRESSION = 10, // zstandard compression, in blocks of 32 scan
+                           // lines.
+
     NUM_COMPRESSION_METHODS // number of different compression methods
 };
 
@@ -41,14 +61,20 @@ struct CompressionDesc
     std::string desc;
     int         numScanlines;
     bool        lossy;
+    bool        deep;
 
     CompressionDesc (
-        std::string _name, std::string _desc, int _scanlines, bool _lossy)
+        std::string _name,
+        std::string _desc,
+        int         _scanlines,
+        bool        _lossy,
+        bool        _deep)
     {
         name         = _name;
         desc         = _desc;
         numScanlines = _scanlines;
         lossy        = _lossy;
+        deep         = _deep;
     }
 };
 
@@ -59,67 +85,78 @@ static const std::map<Compression, CompressionDesc> IdToDesc = {
         "none",
         "no compression",
         1,
-        false)},
+        false,
+        true)},
     {Compression::RLE_COMPRESSION,
      CompressionDesc (
         "rle",
-        "run-length encoding",
+        "run-length encoding.",
         1,
-        false)},
+        false,
+        true)},
     {Compression::ZIPS_COMPRESSION,
      CompressionDesc (
         "zips",
-        "zlib compression, one scan line at a time",
+        "zlib compression, one scan line at a time.",
         1,
-        false)},
+        false,
+        true)},
     {Compression::ZIP_COMPRESSION,
      CompressionDesc (
         "zip",
-        "zlib compression, in blocks of 16 scan lines",
+        "zlib compression, in blocks of 16 scan lines.",
         16,
+        false,
         false)},
     {Compression::PIZ_COMPRESSION,
      CompressionDesc (
         "piz",
-        "piz-based wavelet compression, in blocks of 32 scan lines",
+        "piz-based wavelet compression, in blocks of 32 scan lines.",
         32,
+        false,
         false)},
     {Compression::PXR24_COMPRESSION,
      CompressionDesc (
         "pxr24",
-        "lossy 24-bit float compression, in blocks of 16 scan lines",
+        "lossy 24-bit float compression, in blocks of 16 scan lines.",
         16,
-        true)},
+        true,
+        false)},
     {Compression::B44_COMPRESSION,
      CompressionDesc (
         "b44",
-        "lossy 4-by-4 pixel block compression, fixed compression rate",
+        "lossy 4-by-4 pixel block compression, fixed compression rate.",
         32,
-        true)},
+        true,
+        false)},
     {Compression::B44A_COMPRESSION,
      CompressionDesc (
         "b44a",
-        "lossy 4-by-4 pixel block compression, flat fields are compressed more",
+        "lossy 4-by-4 pixel block compression, flat fields are compressed more.",
         32,
-        true)},
+        true,
+        false)},
     {Compression::DWAA_COMPRESSION,
      CompressionDesc (
         "dwaa",
-        "lossy DCT based compression, in blocks of 32 scanlines",
+        "lossy DCT based compression, in blocks of 32 scanlines. More efficient for partial buffer access.",
         32,
-        true)},
+        true,
+        false)},
     {Compression::DWAB_COMPRESSION,
      CompressionDesc (
         "dwab",
-        "lossy DCT based compression, in blocks of 256 scanlines",
+        "lossy DCT based compression, in blocks of 256 scanlines. More efficient space wise and faster to decode full frames than DWAA_COMPRESSION.",
         256,
-        true)},
+        true,
+        false)},
     {Compression::ZSTD_COMPRESSION,
      CompressionDesc (
         "zstd",
-        "zstandard compression, in blocks of 32 scan lines",
+        "zstandard compression, in blocks of 32 scan lines.",
         32,
-        false)}
+        false,
+        true)}
 };
 // clang-format on
 
@@ -173,14 +210,14 @@ getCompressionIdFromName (const std::string& name, Compression& id)
 
 /// Return true if a compression id exists.
 IMF_EXPORT inline bool
-isValidCompressionId (Compression id)
+isValidCompressionId (const Compression id)
 {
     return IdToDesc.find (id) != IdToDesc.end ();
 }
 
 /// Return a string enumerating all compression names, with a custom separator.
 IMF_EXPORT inline void
-getCompressionNamesString (std::string separator, std::string& in)
+getCompressionNamesString (const std::string separator, std::string& in)
 {
     for (auto it = IdToDesc.begin (); it != std::prev (IdToDesc.end ()); ++it)
     {
@@ -203,6 +240,14 @@ isLossyCompressionId (const Compression id)
 {
     auto it = IdToDesc.find (id);
     return it != IdToDesc.end () ? it->second.lossy : false;
+}
+
+/// Return true is the compression method supports deep data.
+IMF_EXPORT inline bool
+isDeepCompressionId (const Compression id)
+{
+    auto it = IdToDesc.find (id);
+    return it != IdToDesc.end () ? it->second.deep : false;
 }
 
 /// Controls the default zip compression level used. Zip is used for

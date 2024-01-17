@@ -6,9 +6,10 @@
 /* REGISTER PIZ_COMPRESSION
 id: 4
 name: piz
-desc: piz-based wavelet compression, in blocks of 32 scan lines
+desc: piz-based wavelet compression, in blocks of 32 scan lines.
 numScanlines: 32
 lossy: false
+deep: false
 */
 
 #ifndef INCLUDED_IMF_PIZ_COMPRESSOR_H

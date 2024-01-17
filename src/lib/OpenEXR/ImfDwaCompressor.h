@@ -6,16 +6,18 @@
 /* REGISTER DWAA_COMPRESSION
 id: 8
 name: dwaa
-desc: lossy DCT based compression, in blocks of 32 scanlines
+desc: lossy DCT based compression, in blocks of 32 scanlines. More efficient for partial buffer access.
 numScanlines: 32
 lossy: true
+deep: false
 */
 /* REGISTER DWAB_COMPRESSION
 id: 9
 name: dwab
-desc: lossy DCT based compression, in blocks of 256 scanlines
+desc: lossy DCT based compression, in blocks of 256 scanlines. More efficient space wise and faster to decode full frames than DWAA_COMPRESSION.
 numScanlines: 256
 lossy: true
+deep: false
 */
 
 #ifndef INCLUDED_IMF_DWA_COMRESSOR_H

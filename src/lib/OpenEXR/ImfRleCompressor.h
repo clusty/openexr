@@ -6,9 +6,10 @@
 /* REGISTER RLE_COMPRESSION
 id: 1
 name: rle
-desc: run-length encoding
+desc: run-length encoding.
 numScanlines: 1
 lossy: false
+deep: true
 */
 
 #ifndef INCLUDED_IMF_RLE_COMPRESSOR_H

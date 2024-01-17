@@ -6,16 +6,18 @@
 /* REGISTER B44_COMPRESSION
 id: 6
 name: b44
-desc: lossy 4-by-4 pixel block compression, fixed compression rate
+desc: lossy 4-by-4 pixel block compression, fixed compression rate.
 numScanlines: 32
 lossy: true
+deep: false
 */
 /* REGISTER B44A_COMPRESSION
 id: 7
 name: b44a
-desc: lossy 4-by-4 pixel block compression, flat fields are compressed more
+desc: lossy 4-by-4 pixel block compression, flat fields are compressed more.
 numScanlines: 32
 lossy: true
+deep: false
 */
 
 #ifndef INCLUDED_IMF_B44_COMPRESSOR_H

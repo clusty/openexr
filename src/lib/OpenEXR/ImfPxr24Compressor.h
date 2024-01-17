@@ -6,9 +6,10 @@
 /* REGISTER PXR24_COMPRESSION
 id: 5
 name: pxr24
-desc: lossy 24-bit float compression, in blocks of 16 scan lines
+desc: lossy 24-bit float compression, in blocks of 16 scan lines.
 numScanlines: 16
 lossy: true
+deep: false
 */
 
 #ifndef INCLUDED_IMF_PXR24_COMPRESSOR_H

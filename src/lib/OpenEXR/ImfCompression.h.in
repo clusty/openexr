@@ -30,14 +30,20 @@ struct CompressionDesc
     std::string desc;
     int         numScanlines;
     bool        lossy;
+    bool        deep;
 
     CompressionDesc (
-        std::string _name, std::string _desc, int _scanlines, bool _lossy)
+        std::string _name,
+        std::string _desc,
+        int         _scanlines,
+        bool        _lossy,
+        bool        _deep)
     {
         name         = _name;
         desc         = _desc;
         numScanlines = _scanlines;
         lossy        = _lossy;
+        deep         = _deep;
     }
 };
 
@@ -86,14 +92,14 @@ getCompressionIdFromName (const std::string& name, Compression& id)
 
 /// Return true if a compression id exists.
 IMF_EXPORT inline bool
-isValidCompressionId (Compression id)
+isValidCompressionId (const Compression id)
 {
     return IdToDesc.find (id) != IdToDesc.end ();
 }
 
 /// Return a string enumerating all compression names, with a custom separator.
 IMF_EXPORT inline void
-getCompressionNamesString (std::string separator, std::string& in)
+getCompressionNamesString (const std::string separator, std::string& in)
 {
     for (auto it = IdToDesc.begin (); it != std::prev (IdToDesc.end ()); ++it)
     {
@@ -116,6 +122,14 @@ isLossyCompressionId (const Compression id)
 {
     auto it = IdToDesc.find (id);
     return it != IdToDesc.end () ? it->second.lossy : false;
+}
+
+/// Return true is the compression method supports deep data.
+IMF_EXPORT inline bool
+isDeepCompressionId (const Compression id)
+{
+    auto it = IdToDesc.find (id);
+    return it != IdToDesc.end () ? it->second.deep : false;
 }
 
 /// Controls the default zip compression level used. Zip is used for

@@ -65,14 +65,7 @@ isLossyCompression (Compression c)
 bool
 isValidDeepCompression (Compression c)
 {
-    switch (c)
-    {
-        case NO_COMPRESSION:
-        case RLE_COMPRESSION:
-        case ZIPS_COMPRESSION:
-        case ZSTD_COMPRESSION: return true;
-        default: return false;
-    }
+    return isDeepCompressionId(c);
 }
 
 Compressor*

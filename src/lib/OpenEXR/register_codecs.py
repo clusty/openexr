@@ -103,7 +103,7 @@ def generate(args):
         out_file = fh.read()
 
     # parse all headers
-    hdir = os.path.dirname(args.OUPPUT_FILE)
+    hdir = os.path.dirname(args.OUTPUT_FILE)
     for hfile in get_headers(hdir):
         parse_header(hfile, codecs)
 
@@ -121,14 +121,14 @@ def generate(args):
     out_file = out_file.replace("// CMAKE_CODEC_NAME_TO_ID", name_to_id_string(codecs))
 
     # save to disk
-    if os.path.exists(args.OUPPUT_FILE):
+    if os.path.exists(args.OUTPUT_FILE):
         # omly save if different
-        with open(args.OUPPUT_FILE, "r") as fh:
+        with open(args.OUTPUT_FILE, "r") as fh:
             old_file = fh.read()
         if old_file == out_file:
             return
 
-    with open(args.OUPPUT_FILE, "w") as fh:
+    with open(args.OUTPUT_FILE, "w") as fh:
         fh.write(out_file)
 
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Parses all Imf*Compressor.h files to register all compression methods."
     )
-    parser.add_argument("OUPPUT_FILE", help="The generated header file.")
+    parser.add_argument("OUTPUT_FILE", help="The generated header file.")
     parser.add_argument(
         "-i",
         "--input",

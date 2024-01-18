@@ -5,14 +5,16 @@
 // Copyright (c) Contributors to the OpenEXR Project.
 //
 
-/* REGISTER ZSTD_COMPRESSION
-id: 10
-name: zstd
-desc: zstandard compression, in blocks of 32 scan lines.
-numScanlines: 32
-lossy: false
-deep: true
-*/
+// Mandatory section to register this compression method in OpenEXR
+// ----------------------------------------------------------------
+// ZSTD_COMPRESSION = 10
+// ZSTD_COMPRESSION name zstd
+// ZSTD_COMPRESSION desc zstandard compression, in blocks of 32 scan lines.
+// ZSTD_COMPRESSION scanlines 32
+// ZSTD_COMPRESSION lossy false
+// ZSTD_COMPRESSION deep true
+// ZSTD_COMPRESSION newscan ZstdCompressor (hdr, maxScanLineSize, 32)
+// ZSTD_COMPRESSION newtile ZstdCompressor (hdr, tileLineSize, numTileLines)
 
 #include <memory>
 #include "ImfNamespace.h"

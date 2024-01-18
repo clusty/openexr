@@ -3,14 +3,16 @@
 // Copyright (c) Contributors to the OpenEXR Project.
 //
 
-/* REGISTER PIZ_COMPRESSION
-id: 4
-name: piz
-desc: piz-based wavelet compression, in blocks of 32 scan lines.
-numScanlines: 32
-lossy: false
-deep: false
-*/
+// Mandatory section to register this compression method in OpenEXR
+// ----------------------------------------------------------------
+// PIZ_COMPRESSION = 4
+// PIZ_COMPRESSION name piz
+// PIZ_COMPRESSION desc piz-based wavelet compression, in blocks of 32 scan lines.
+// PIZ_COMPRESSION scanlines 32
+// PIZ_COMPRESSION lossy false
+// PIZ_COMPRESSION deep false
+// PIZ_COMPRESSION newscan PizCompressor (hdr, maxScanLineSize, 32)
+// PIZ_COMPRESSION newtile PizCompressor (hdr, tileLineSize, numTileLines)
 
 #ifndef INCLUDED_IMF_PIZ_COMPRESSOR_H
 #define INCLUDED_IMF_PIZ_COMPRESSOR_H

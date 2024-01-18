@@ -9,11 +9,11 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "ImfCompressor.h"
-#include "ImfB44Compressor.h"
 #include "ImfCheckedArithmetic.h"
-#include "ImfDwaCompressor.h"
 #include "ImfNamespace.h"
+#include "ImfB44Compressor.h"
+#include "ImfCompressor.h"
+#include "ImfDwaCompressor.h"
 #include "ImfPizCompressor.h"
 #include "ImfPxr24Compressor.h"
 #include "ImfRleCompressor.h"
@@ -73,7 +73,9 @@ newCompressor (Compression c, size_t maxScanLineSize, const Header& hdr)
 {
     switch (c)
     {
-        case RLE_COMPRESSION: return new RleCompressor (hdr, maxScanLineSize);
+        case RLE_COMPRESSION:
+
+            return new RleCompressor (hdr, maxScanLineSize);
 
         case ZIPS_COMPRESSION:
 
@@ -101,21 +103,14 @@ newCompressor (Compression c, size_t maxScanLineSize, const Header& hdr)
 
         case DWAA_COMPRESSION:
 
-            return new DwaCompressor (
-                hdr,
-                static_cast<int> (maxScanLineSize),
-                32,
-                DwaCompressor::STATIC_HUFFMAN);
+            return new DwaCompressor (hdr, static_cast<int> (maxScanLineSize), 32, DwaCompressor::STATIC_HUFFMAN);
 
         case DWAB_COMPRESSION:
 
-            return new DwaCompressor (
-                hdr,
-                static_cast<int> (maxScanLineSize),
-                256,
-                DwaCompressor::STATIC_HUFFMAN);
+            return new DwaCompressor (hdr, static_cast<int> (maxScanLineSize), 256, DwaCompressor::STATIC_HUFFMAN);
 
         case ZSTD_COMPRESSION:
+
             return new ZstdCompressor (hdr, maxScanLineSize, 32);
         default: return 0;
     }
@@ -144,12 +139,12 @@ newTileCompressor (
             return new RleCompressor (hdr, uiMult (tileLineSize, numTileLines));
 
         case ZIPS_COMPRESSION:
+
+            return new ZipCompressor (hdr, tileLineSize, numTileLines);
+
         case ZIP_COMPRESSION:
 
             return new ZipCompressor (hdr, tileLineSize, numTileLines);
-        case ZSTD_COMPRESSION:
-
-            return new ZstdCompressor (hdr, tileLineSize, numTileLines);
 
         case PIZ_COMPRESSION:
 
@@ -169,20 +164,15 @@ newTileCompressor (
 
         case DWAA_COMPRESSION:
 
-            return new DwaCompressor (
-                hdr,
-                static_cast<int> (tileLineSize),
-                static_cast<int> (numTileLines),
-                DwaCompressor::DEFLATE);
+            return new DwaCompressor (hdr, static_cast<int> (tileLineSize), static_cast<int> (numTileLines), DwaCompressor::DEFLATE);
 
         case DWAB_COMPRESSION:
 
-            return new DwaCompressor (
-                hdr,
-                static_cast<int> (tileLineSize),
-                static_cast<int> (numTileLines),
-                DwaCompressor::STATIC_HUFFMAN);
+            return new DwaCompressor (hdr, static_cast<int> (tileLineSize), static_cast<int> (numTileLines), DwaCompressor::STATIC_HUFFMAN);
 
+        case ZSTD_COMPRESSION:
+
+            return new ZstdCompressor (hdr, tileLineSize, numTileLines);
         default: return 0;
     }
 }

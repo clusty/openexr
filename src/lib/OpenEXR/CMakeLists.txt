@@ -1,20 +1,104 @@
 # SPDX-License-Identifier: BSD-3-Clause Copyright (c) Contributors to the
 # OpenEXR Project.
 
-find_package(Python3 QUIET)
+message(STATUS "Parsing compression headers")
+set(tab "    ")
+set(comp_enum_list "${tab}NO_COMPRESSION = 0,")
+set(NO_COMPRESSION_name "none")
+set(NO_COMPRESSION_desc "no compression.")
+set(NO_COMPRESSION_scanlines "1")
+set(NO_COMPRESSION_lossy "false")
+set(NO_COMPRESSION_deep "true")
 
-file(GLOB COMPRESSOR_HEADERS Imf*Compressor.h)
-message(STATUS "headers: ${COMPRESSOR_HEADERS}")
-add_custom_command(
-  OUTPUT ImfCompression.h
-  COMMAND
-  ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/register_codecs.py -i
-  ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in ${COMPRESSOR_HEADERS}
-  COMMENT "Registering codecs"
-  VERBATIM)
-message(STATUS "Compresssion methods registered")
+# get list of headers
+file(GLOB compressor_headers Imf*Compressor.h)
+set(id_list)
+foreach(header ${compressor_headers})
+  # extract registration metadata
+  file(STRINGS ${header} meta REGEX "// [A-Z0-9]+_COMPRESSION *.+")
+  # process each field
+  foreach(field ${meta})
+    string(REGEX MATCH "[A-Z0-9]+_COMPRESSION" enum_name ${field})
+    if(field MATCHES "// [A-Z0-9]+_COMPRESSION *=.+")
+      string(REGEX MATCH "[0-9]+$" id ${field})
+      # sanity check
+      list(FIND id_list ${id} check)
+      if(check GREATER -1)
+        message(FATAL_ERROR "Found duplicate compressor id in ${field} !")
+      else()
+        list(APPEND id_list ${id})
+      endif()
+      # end of sanity-checking
+      string(SUBSTRING ${field} 3 -1 enum)
+      string(PREPEND enum ${tab} )
+      string(PREPEND enum ${id} ) # prepend id for sorting
+      string(APPEND enum "," )
+      list(APPEND comp_enum_list ${enum})
+    else()
+      # store other fields in named variables
+      string(REGEX MATCH "${enum_name} *([a-z]+) (.+)" tmp ${field})
+      set(data_name ${CMAKE_MATCH_1})
+      set(data_value ${CMAKE_MATCH_2})
+      set(${enum_name}_${data_name} ${data_value})
+    endif()
+  endforeach()
+endforeach()
+# sort enum list and remove prefixed id
+list(SORT comp_enum_list COMPARE NATURAL)
+list(TRANSFORM comp_enum_list REPLACE "^[0-9]+" "")
+# final enum fields formatting
+list(APPEND comp_enum_list "${tab}NUM_COMPRESSION_METHODS")
+string(JOIN "\n" EXR_CODEC_ENUM_DEFINITION ${comp_enum_list})
+
+# build codec declaration string
+foreach(enum_field ${comp_enum_list})
+  string(REGEX MATCH "[A-Z0-9]+_COMPRESSION" enum_name ${enum_field})
+  if(NOT enum_name STREQUAL "NUM_COMPRESSION")
+    list(APPEND decls "    {Compression::${enum_name},")
+    list(APPEND decls "     CompressionDesc (")
+    list(APPEND decls "        \"${${enum_name}_name}\",")
+    list(APPEND decls "        \"${${enum_name}_desc}\",")
+    list(APPEND decls "        ${${enum_name}_scanlines},")
+    list(APPEND decls "        ${${enum_name}_lossy},")
+    list(APPEND decls "        ${${enum_name}_deep})},")
+  endif()
+endforeach()
+string(JOIN "\n" EXR_CODEC_DECLARATIONS ${decls})
+
+# build codec name to id map
+set(name_to_id "${tab}{\"no\", Compression::NO_COMPRESSION},")
+foreach(enum_field ${comp_enum_list})
+  string(REGEX MATCH "[A-Z0-9]+_COMPRESSION" enum_name ${enum_field})
+  if(NOT enum_name STREQUAL "NUM_COMPRESSION")
+    list(APPEND name_to_id "${tab}{\"${${enum_name}_name}\", Compression::${enum_name}},")
+  endif()
+endforeach()
+string(JOIN "\n" EXR_CODEC_NAME_TO_ID ${name_to_id})
+
+# build include string
+foreach(header ${compressor_headers})
+  cmake_path(GET header FILENAME filename)
+  list(APPEND includes "#include \"${filename}\"")
+endforeach()
+string(JOIN "\n" EXR_COMPRESSION_INCLUDES ${includes})
+
+# build newCompressor string
+foreach(enum_field ${comp_enum_list})
+  string(REGEX MATCH "[A-Z0-9]+_COMPRESSION" enum_name ${enum_field})
+  if(NOT enum_name STREQUAL "NUM_COMPRESSION" AND NOT enum_name STREQUAL "NO_COMPRESSION")
+    list(APPEND new_scan_comp "${tab}${tab}case ${enum_name}:")
+    list(APPEND new_scan_comp "${tab}${tab}${tab}return new ${${enum_name}_newscan}\;")
+    list(APPEND new_tile_comp "${tab}${tab}case ${enum_name}:")
+    list(APPEND new_tile_comp "${tab}${tab}${tab}return new ${${enum_name}_newtile}\;")
+    endif()
+endforeach()
+string(JOIN "\n\n" EXR_NEW_COMPRESSOR ${new_scan_comp})
+string(JOIN "\n\n" EXR_NEW_TILE_COMPRESSOR ${new_tile_comp})
+
+message(STATUS "Configuring compression methods")
+configure_file(ImfCompression.h.in ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h)
+configure_file(ImfCompressor.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompressor.cpp)
+
 
 openexr_define_library(OpenEXR
   PRIV_EXPORT OPENEXR_EXPORTS

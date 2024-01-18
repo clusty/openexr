@@ -21,7 +21,7 @@ OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
 
 enum IMF_EXPORT_ENUM Compression
 {
-// CMAKE_ENUM_DEFINITION
+${EXR_CODEC_ENUM_DEFINITION}
 };
 
 struct CompressionDesc
@@ -49,12 +49,12 @@ struct CompressionDesc
 
 // clang-format off
 static const std::map<Compression, CompressionDesc> IdToDesc = {
-// CMAKE_CODEC_DECLARATIONS
+${EXR_CODEC_DECLARATIONS}
 };
 // clang-format on
 
 static const std::map<std::string, Compression> CompressionNameToId = {
-// CMAKE_CODEC_NAME_TO_ID
+${EXR_CODEC_NAME_TO_ID}
 };
 
 #define UNKNOWN_COMPRESSION_ID_MSG "INVALID COMPRESSION ID"

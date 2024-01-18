@@ -3,6 +3,15 @@ import argparse
 import glob
 import re
 import json
+import logging
+
+
+def setup_logger(verbose):
+    levels = [logging.WARNING, logging.INFO, logging.DEBUG]
+    logging.basicConfig(
+        level=levels[min(verbose, 2)],
+        format="[%(filename)s] %(levelname)9s: %(message)s",
+    )
 
 
 def get_headers(hdir):
@@ -15,13 +24,15 @@ def parse_header(hfile, codecs):
         f = fh.read()
     # parse the declarations
     matches = re.findall(
-        r"/\*\s*(REGISTER[\s\w\d\n\-,\.:]+)\*/", f, re.MULTILINE | re.DOTALL
+        r"/\*\s*(REGISTER[^*]+)\*/", f, re.MULTILINE | re.DOTALL
     )
     ints = ("id", "numScanlines")
     for m in matches:
+        logging.debug('  > extracted: %r', m)
         codec = {"enum": re.search(r"REGISTER\s+(\w+)", m).group(1)}
         for ma in re.findall(r"(\w+):\s*(.+)\n", m, re.MULTILINE):
             codec[ma[0]] = ma[1] if ma[0] not in ints else int(ma[1])
+        logging.debug('  > dict: %r', codec)
         codecs.append(codec)
 
 
@@ -33,7 +44,7 @@ def sanity_check_codecs(codecs):
             codec_ids.append(codec["id"])
         else:
             print(json.dumps(codecs, indent=3))
-            raise RuntimeError("Duplicate codec id detected !")
+            raise RuntimeError("Duplicate codec id detected ! See printed dict above.")
 
 
 def wrap_align_comments(line):
@@ -101,13 +112,16 @@ def generate(args):
     # read template file
     with open(args.input, "r") as fh:
         out_file = fh.read()
+    logging.info("Read template file: %s", args.input)
 
     # parse all headers
     hdir = os.path.dirname(args.OUTPUT_FILE)
     for hfile in get_headers(hdir):
         parse_header(hfile, codecs)
+        logging.info("Parsed header: %s", hfile)
 
     sanity_check_codecs(codecs)
+    logging.info("sanity_check_codecs: PASSED")
     # sort codecs by id
     codecs.sort(key=lambda x: x["id"])
 
@@ -119,6 +133,7 @@ def generate(args):
         "// CMAKE_CODEC_DECLARATIONS", codec_declaration_string(codecs)
     )
     out_file = out_file.replace("// CMAKE_CODEC_NAME_TO_ID", name_to_id_string(codecs))
+    logging.info("All tokens replaced.")
 
     # save to disk
     if os.path.exists(args.OUTPUT_FILE):
@@ -126,10 +141,12 @@ def generate(args):
         with open(args.OUTPUT_FILE, "r") as fh:
             old_file = fh.read()
         if old_file == out_file:
+            logging.info("Same file: do not write to disk.")
             return
 
     with open(args.OUTPUT_FILE, "w") as fh:
         fh.write(out_file)
+    logging.info("File saved: %s", args.OUTPUT_FILE)
 
 
 if __name__ == "__main__":
@@ -142,5 +159,13 @@ if __name__ == "__main__":
         "--input",
         help="The input header file to be updated.",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        type=int,
+        default=0,
+        help="Print extra infos. 0: silent, 1: infos, 2: debug",
+    )
     args = parser.parse_args()
+    setup_logger(args.verbose)
     generate(args)

@@ -14,9 +14,6 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h.in ${COMPRESSOR_HEADERS}
   COMMENT "Registering codecs"
   VERBATIM)
-# add_custom_target(
-#   generate_compression_header 
-#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ImfCompression.h)
 message(STATUS "Compresssion methods registered")
 
 openexr_define_library(OpenEXR

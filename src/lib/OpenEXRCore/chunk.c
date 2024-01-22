@@ -706,8 +706,7 @@ exr_read_scanline_chunk_info (
     uint64_t*        ctable;
     EXR_PROMOTE_READ_CONST_CONTEXT_AND_PART_OR_ERROR (ctxt, part_index);
 
-    if (!cinfo)
-        return pctxt->standard_error (pctxt, EXR_ERR_INVALID_ARGUMENT);
+    if (!cinfo) return pctxt->standard_error (pctxt, EXR_ERR_INVALID_ARGUMENT);
 
     if (part->storage_mode == EXR_STORAGE_TILED ||
         part->storage_mode == EXR_STORAGE_DEEP_TILED)
@@ -765,8 +764,7 @@ exr_read_scanline_chunk_info (
 
     /* need to read from the file to get the packed chunk size */
     rv = extract_chunk_table (pctxt, part, &ctable, &chunkmin);
-    if (rv != EXR_ERR_SUCCESS)
-        return rv;
+    if (rv != EXR_ERR_SUCCESS) return rv;
 
     fsize = pctxt->file_size;
 
@@ -797,8 +795,7 @@ exr_read_scanline_chunk_info (
         NULL,
         EXR_MUST_READ_ALL);
 
-    if (rv != EXR_ERR_SUCCESS)
-        return rv;
+    if (rv != EXR_ERR_SUCCESS) return rv;
 
     priv_to_native32 (data, rdcnt);
 

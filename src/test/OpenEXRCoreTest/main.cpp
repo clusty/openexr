@@ -207,7 +207,7 @@ main (int argc, char* argv[])
     TEST (testDeepNoCompression, "core_compression");
     TEST (testDeepZIPCompression, "core_compression");
     TEST (testDeepZIPSCompression, "core_compression");
-    TEST (testDeepZstdCompression, "core_compression");
+    TEST (testDeepZstdCompression, "core_compression"); // empty dummy test
 
     if (helpMode)
     {

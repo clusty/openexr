@@ -37,7 +37,7 @@ add_executable(OpenEXRExamples
   multipartExamples.h
 )
 
-target_link_libraries(OpenEXRExamples OpenEXR::OpenEXRCore OpenEXR::OpenEXR)
+target_link_libraries(OpenEXRExamples OpenEXR::OpenEXR)
 set_target_properties(OpenEXRExamples PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )

@@ -8,10 +8,14 @@
 #include "internal_decompress.h"
 #include "blosc2.h"
 
+size_t
+exr_get_zstd_lines_per_chunk ()
+{
+    return 1;
+}
 
 long
-BLOSC_compress_impl (
-    char* inPtr, int inSize, void * outPtr, int outPtrSize)
+exr_compress_zstd (char* inPtr, int inSize, void* outPtr, int outPtrSize)
 {
     if (inSize == 0) // Weird input data when subsampling
     {
@@ -20,13 +24,12 @@ BLOSC_compress_impl (
     }
 
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
-
-    int typeSize = inSize % 4 == 0 ? 4 : 2;
+    int typeSize     = inSize % 4 == 0 ? 4 : 2;
     cparams.typesize = typeSize;
     // clevel 9 is about a 20% increase in compression compared to 5.
     // Decompression speed is unchanged.
     int zstd_level;
-    exr_get_default_zstd_compression_level(&zstd_level);
+    exr_get_default_zstd_compression_level (&zstd_level);
     cparams.clevel   = zstd_level;
     cparams.nthreads = 1;
     cparams.compcode = BLOSC_ZSTD; // Codec
@@ -37,57 +40,52 @@ BLOSC_compress_impl (
     storage.contiguous     = true;
     storage.cparams        = &cparams;
 
-    blosc2_schunk *_schunk = blosc2_schunk_new (&storage);
+    blosc2_schunk* _schunk = blosc2_schunk_new (&storage);
 
     blosc2_schunk_append_buffer (_schunk, inPtr, inSize);
 
     uint8_t* buffer;
     bool     shouldFree = true;
-    int64_t size = blosc2_schunk_to_buffer (_schunk, &buffer, &shouldFree);
+    int64_t  size = blosc2_schunk_to_buffer (_schunk, &buffer, &shouldFree);
 
     if (size <= inSize && size <= outPtrSize && size > 0)
-    {
-        memcpy(outPtr, buffer, size);
-    }
+    { memcpy (outPtr, buffer, size); }
     else
     {
-        memcpy(outPtr, inPtr, inSize);
+        memcpy (outPtr, inPtr, inSize);
         size = inSize; // We increased compression size
     }
 
-    if (shouldFree) { free(buffer); }
+    if (shouldFree) { free (buffer); }
 
-    blosc2_schunk_free(_schunk);
+    blosc2_schunk_free (_schunk);
     return size;
 }
 
 long
-BLOSC_uncompress_impl_single_blob (
-    const char* inPtr, uint64_t inSize, void ** outPtr, uint64_t outPtrSize)
+exr_uncompress_zstd (
+    const char* inPtr, uint64_t inSize, void** outPtr, uint64_t outPtrSize)
 {
-    blosc2_schunk*_schunk = blosc2_schunk_from_buffer (inPtr, inSize, true);
+    blosc2_schunk* _schunk = blosc2_schunk_from_buffer ((uint8_t *)inPtr, inSize, true);
 
-    if (_schunk == NULL)
-    {
-        return -1;
-    }
+    if (_schunk == NULL) { return -1; }
 
     if (outPtrSize == 0) // we don't have any storage allocated
     {
-        *outPtr = malloc(_schunk->nbytes);
+        *outPtr    = malloc (_schunk->nbytes);
         outPtrSize = _schunk->nbytes;
     }
 
-    int size = blosc2_schunk_decompress_chunk (
-        _schunk, 0, *outPtr, outPtrSize);
-    blosc2_schunk_free(_schunk);
+    int size = blosc2_schunk_decompress_chunk (_schunk, 0, *outPtr, outPtrSize);
+    blosc2_schunk_free (_schunk);
 
     return size;
 }
 
-exr_result_t internal_exr_apply_zstd (exr_encode_pipeline_t* encode)
+exr_result_t
+internal_exr_apply_zstd (exr_encode_pipeline_t* encode)
 {
-    long compressedSize = BLOSC_compress_impl (
+    long compressedSize = exr_compress_zstd (
         encode->packed_buffer,
         encode->packed_bytes,
         encode->compressed_buffer,
@@ -98,7 +96,8 @@ exr_result_t internal_exr_apply_zstd (exr_encode_pipeline_t* encode)
     return EXR_ERR_SUCCESS;
 }
 
-exr_result_t internal_exr_undo_zstd (
+exr_result_t
+internal_exr_undo_zstd (
     exr_decode_pipeline_t* decode,
     const void*            compressed_data,
     uint64_t               comp_buf_size,
@@ -106,15 +105,11 @@ exr_result_t internal_exr_undo_zstd (
     uint64_t               uncompressed_size)
 {
 
-
-    long uncompressedSize = BLOSC_uncompress_impl_single_blob (
-                (const char*)compressed_data,
-                comp_buf_size,
-                &uncompressed_data,
-                uncompressed_size);
-    if (uncompressed_size != uncompressedSize)
-    {
-        return EXR_ERR_CORRUPT_CHUNK;
-    }
+    long uncompressedSize = exr_uncompress_zstd (
+        (const char*) compressed_data,
+        comp_buf_size,
+        &uncompressed_data,
+        uncompressed_size);
+    if (uncompressed_size != uncompressedSize) { return EXR_ERR_CORRUPT_CHUNK; }
     return EXR_ERR_SUCCESS;
 }

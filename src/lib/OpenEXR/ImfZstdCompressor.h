@@ -16,12 +16,10 @@ OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
 class ZstdCompressor : public Compressor
 {
 public:
-    ZstdCompressor (
-        const Header& hdr, size_t maxScanLines, size_t numScanLines);
+    explicit ZstdCompressor (const Header& hdr);
 private:
     using raw_ptr = std::unique_ptr<char, decltype (&free)>;
     std::vector<raw_ptr>    _outBuffer;
-    size_t     _numScanLines;
     int        numScanLines () const override; // max
     int        compress (
                const char* inPtr, int inSize, int minY, const char*& outPtr) override;

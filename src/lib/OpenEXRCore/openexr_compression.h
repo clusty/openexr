@@ -46,13 +46,15 @@ exr_result_t exr_uncompress_buffer (
     size_t*             actual_out);
 
 EXR_EXPORT
-long BLOSC_compress_impl (
+long exr_compress_zstd (
     char* inPtr, int inSize, void * outPtr, int outPtrSize);
 
 EXR_EXPORT
-long
-BLOSC_uncompress_impl_single_blob (
+long exr_uncompress_zstd (
     const char* inPtr, uint64_t inSize, void ** outPtr, uint64_t outPtrSize);
+
+EXR_EXPORT
+size_t exr_get_zstd_lines_per_chunk();
 
 #ifdef __cplusplus
 } /* extern "C" */

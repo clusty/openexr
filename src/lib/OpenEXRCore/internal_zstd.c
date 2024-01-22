@@ -13,6 +13,12 @@ long
 BLOSC_compress_impl (
     char* inPtr, int inSize, void * outPtr, int outPtrSize)
 {
+    if (inSize == 0) // Weird input data when subsampling
+    {
+        outPtr = NULL;
+        return 0;
+    }
+
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
 
     int typeSize = inSize % 4 == 0 ? 4 : 2;
@@ -39,19 +45,19 @@ BLOSC_compress_impl (
     bool     shouldFree = true;
     int64_t size = blosc2_schunk_to_buffer (_schunk, &buffer, &shouldFree);
 
-    if (size <= outPtrSize && size > 0)
+    if (size <= inSize && size <= outPtrSize && size > 0)
     {
         memcpy(outPtr, buffer, size);
     }
     else
     {
-        size = -1;
+        memcpy(outPtr, inPtr, inSize);
+        size = inSize; // We increased compression size
     }
 
     if (shouldFree) { free(buffer); }
 
     blosc2_schunk_free(_schunk);
-
     return size;
 }
 
